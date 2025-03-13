@@ -2,11 +2,7 @@ async function fetchRepos() {
     try {
         const response = await fetch('https://api.github.com/users/anxety-solo/repos');
         if (!response.ok) {
-            if (response.status === 404) {
-                window.location.href = '404.html';
-            } else {
-                window.location.href = 'error.html';
-            }
+            showErrorPage(response.status);
             return;
         }
 
@@ -69,10 +65,24 @@ async function fetchRepos() {
         setTimeout(() => loader.remove(), 350);
         
     } catch (error) {
-        console.error('Error fetching repositories:', error);
-        document.querySelector('.loader').classList.add('hidden');
-        window.location.href = 'error.html';
+        showErrorPage(500);
     }
+}
+
+function showErrorPage(statusCode) {
+    const container = document.getElementById('reposContainer');
+    const errorContent = `
+        <div class="error-container">
+            <h1>${statusCode === 404 ? '404' : 'Error'}</h1>
+            <p>${statusCode === 404 
+                ? 'Repositories not found' 
+                : 'Failed to load data'}</p>
+        </div>
+    `;
+    
+    container.innerHTML = errorContent;
+    document.querySelector('.loader').classList.add('hidden');
+    window.history.replaceState({}, document.title, window.location.pathname);
 }
 
 // Function to get Font Awesome icons by language
