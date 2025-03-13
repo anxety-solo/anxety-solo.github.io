@@ -14,6 +14,9 @@ body {
     background-color: var(--body-color);
     color: var(--text-color);
     overflow-x: hidden;
+    /* Mobile */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
 }
 
 /* Header styles */
@@ -27,13 +30,11 @@ body {
 .header h1 {
     font-size: 4rem;
     color: var(--header-color);
-    animation: fadeIn 1s ease;
     letter-spacing: 10px;
 }
 
 .header h5 {
     color: #666666;
-    animation: fadeIn 1s ease;
     letter-spacing: 4px;
 }
 
@@ -49,20 +50,20 @@ body {
 
 /* Card styles */
 .card {
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
     background-color: var(--background);
     backdrop-filter: var(--blur);
     border-radius: 15px;
     padding: var(--card-padding);
     color: var(--text-color);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.2s ease;
     border: 2px solid var(--border-color);
     box-shadow: 0 2px 10px 0 rgba(var(--shadow-color), 0.15);
-    display: flex;
-    flex-direction: column;
-    min-height: 200px;
-    position: relative;
     transform: translateY(20px);
     animation: cardAppear 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    will-change: transform, box-shadow;
 }
 
 .card:hover {
@@ -114,13 +115,12 @@ body {
     opacity: 0;
     background-color: var(--body-color);
     padding: 10px 15px;
-    margin: 15px;
     border-radius: 8px;
     transform: translateY(-10px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 2px solid var(--border-color);
     box-shadow: 0 2px 10px 0 rgba(var(--shadow-color), 0.15);
-    z-index: 1;
+    z-index: 2;
 }
 
 .languages-container::before {
@@ -146,7 +146,7 @@ body {
 /* Card hover adjustments */
 .card:hover .languages-container {
     opacity: 1;
-    transform: translateY(-75px);
+    transform: translateY(-60px);
     box-shadow: 0 4px 15px rgba(var(--shadow-color), 0.25);
 }
 
@@ -241,12 +241,6 @@ body {
     position: absolute;
 }
 
-/*
-.sidebar-item--theme .fa-sun {
-    opacity: 0;
-}
-*/
-
 /* Dark Theme Adjustments */
 .sidebar-item--theme .fa-sun,
 body.dark-theme .sidebar-item--theme .fa-moon {
@@ -258,11 +252,6 @@ body.dark-theme .sidebar-item--theme .fa-sun {
 }
 
 /* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
 @keyframes cardAppear {
     to {
         opacity: 1;

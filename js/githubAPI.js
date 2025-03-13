@@ -21,7 +21,7 @@ async function fetchRepos() {
         );
 
         const container = document.getElementById('reposContainer');
-        container.innerHTML = '';
+        const fragment = document.createDocumentFragment();
 
         sortedRepos.forEach((repo, index) => {
             const card = document.createElement('div');
@@ -58,7 +58,12 @@ async function fetchRepos() {
 
             card.style.animationDelay = `${index * 50}ms`;
             container.appendChild(card);
+            
+            fragment.appendChild(card);
         });
+
+        container.innerHTML = '';
+        container.appendChild(fragment);
 
         const loader = document.querySelector('.loader');
         loader.classList.add('hidden');
