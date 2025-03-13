@@ -11,7 +11,7 @@
 
 body {
     min-height: 100vh;
-    background: var(--body-color);
+    background-color: var(--body-color);
     color: var(--text-color);
     overflow-x: hidden;
 }
@@ -49,7 +49,7 @@ body {
 
 /* Card styles */
 .card {
-    background: var(--background);
+    background-color: var(--background);
     backdrop-filter: var(--blur);
     border-radius: 15px;
     padding: var(--card-padding);
@@ -94,14 +94,13 @@ body {
     color: var(--text-color);
     text-decoration: none;
     padding: 8px 16px;
-    background: var(--button-color);
+    background-color: var(--button-color);
     border-radius: 8px;
-    transition: background 0.3s ease;
     display: inline-block;
 }
 
 .card a:hover {
-    background: var(--button-color-hover);
+    background-color: var(--button-color-hover);
 }
 
 /* GitHub Profile Stats */
@@ -113,7 +112,7 @@ body {
     display: flex;
     gap: 10px;
     opacity: 0;
-    background: var(--body-color);
+    background-color: var(--body-color);
     padding: 10px 15px;
     margin: 15px;
     border-radius: 8px;
@@ -131,7 +130,7 @@ body {
     right: 20px;
     width: 15px;
     height: 15px;
-    background: var(--body-color);
+    background-color: var(--body-color);
     border-right: 2px solid var(--border-color);
     border-bottom: 2px solid var(--border-color);
     transform: rotate(45deg);
@@ -140,7 +139,6 @@ body {
 
 .languages-container i {
     font-size: 1.4rem;
-    transition: transform 0.2s ease;
     position: relative;
     z-index: 2;
 }
@@ -186,11 +184,11 @@ body {
     width: 48px;
     height: 48px;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     text-decoration: none;
     color: var(--text-color);
     border-radius: 24px;
-    background: var(--background);
+    background-color: var(--background);
     backdrop-filter: var(--blur);
     border: 2px solid var(--border-color);
     padding: 0;
@@ -241,14 +239,16 @@ body {
 
 .sidebar-item--theme .theme-icon {
     position: absolute;
-    transition: opacity 0.3s ease;
 }
 
+/*
 .sidebar-item--theme .fa-sun {
     opacity: 0;
 }
+*/
 
 /* Dark Theme Adjustments */
+.sidebar-item--theme .fa-sun,
 body.dark-theme .sidebar-item--theme .fa-moon {
     opacity: 0;
 }
