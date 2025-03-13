@@ -1,0 +1,92 @@
+:root {
+    /* Light theme */
+    --body-light: #DADDDD;
+    --primary-light: #FF69B4;
+    --secondary-light: #FFB6C1;
+    --background-light: rgba(255, 255, 255, 0.35);
+    --border-light: rgba(0, 0, 0, 0.25);
+    --text-light: #2D2D2D;
+    --header-light: #2D2D2D;
+    --button-light: rgba(0, 0, 0, 0.15);
+    --button-light-hover: rgba(0, 0, 0, 0.3);
+    --shadow-light: 0, 0, 0;
+
+    /* Dark theme */
+    --body-dark: #0B0B0B;
+    --primary-dark: #FF1493;
+    --secondary-dark: #FF69B4;
+    --background-dark: rgba(0, 0, 0, 0.5);
+    --border-dark: rgba(255, 255, 255, 0.1);
+    --text-dark: #FFFFFF;
+    --header-dark: #FFFFFF;
+    --button-dark: rgba(255, 255, 255, 0.15);
+    --button-dark-hover: rgba(255, 255, 255, 0.35);
+    --shadow-dark: 255, 66, 168;
+
+
+    /* Common */
+    --blur: blur(8px);
+    --card-padding: 1.5rem;
+}
+
+body.light-theme {
+    --body-color: var(--body-light);
+    --primary-color: var(--primary-light);
+    --secondary-color: var(--secondary-light);
+    --background: var(--background-light);
+    --border-color: var(--border-light);
+    --text-color: var(--text-light);
+    --header-color: var(--header-light);
+    --button-color: var(--button-light);
+    --button-color-hover: var(--button-light-hover);
+    --shadow-color: var(--shadow-light);
+}
+
+body.dark-theme {
+    --body-color: var(--body-dark);
+    --primary-color: var(--primary-dark);
+    --secondary-color: var(--secondary-dark);
+    --background: var(--background-dark);
+    --border-color: var(--border-dark);
+    --text-color: var(--text-dark);
+    --header-color: var(--header-dark);
+    --button-color: var(--button-dark);
+    --button-color-hover: var(--button-dark-hover);
+    --shadow-color: var(--shadow-dark);
+}
+
+/* Loader styles */
+.loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--background);
+    backdrop-filter: var(--blur);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.loader::after {
+    content: "";
+    width: 50px;
+    height: 50px;
+    border: 5px solid var(--primary-color);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loader.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
