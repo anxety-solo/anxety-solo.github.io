@@ -13,9 +13,9 @@
 
     <!-- Style -->
     <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/sort.css">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/scrollbar.css">
+    <link rel="stylesheet" href="css/sortingGitRepo.css">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css">
 </head>
@@ -23,8 +23,17 @@
     <!-- Loader Spiner -->
     <div class="loader"></div>
 
+
+    <!-- Header -->
+    <header class="header">
+        <h1>ANXETY</h1>
+        <h5>My GitHub Repositories :3</h5>
+    </header>
+
+
     <!-- Sidebar Container -->
-    <div class="sidebar">
+    <!-- Left-Sidebar -->
+    <div class="sidebar left-sidebar">
         <a href="https://github.com/anxety-solo" class="sidebar-item" aria-label="GitHub profile">
             <div class="sidebar-icon">
                 <i class="fab fa-github"></i>
@@ -47,11 +56,9 @@
         </button>
     </div>
 
-    <header class="header">
-        <h1>ANXETY</h1>
-        <h5>My GitHub Repositories :3</h5>
-
-        <div class="sort-container">
+    <!-- Right-Sidebar -->
+    <div class="sidebar right-sidebar">
+        <div class="sort-container">        
             <button class="sort-btn" aria-label="Sort repositories">
                 <i class="fas fa-sort"></i>
                 Sorting
@@ -63,13 +70,14 @@
                 <li data-sort="name">By name</li>
             </ul>
         </div>
-    </header>
+    </div>
+
 
     <!-- Repositories Container -->
     <div class="container" id="reposContainer"></div>
 
     <script src="js/githubAPI.js"></script>
     <script src="js/themeHandler.js" defer></script>
-    <script src="js/sort.js" defer></script>
+    <script src="js/sortingGitRepo.js" defer></script>
 </body>
 </html>

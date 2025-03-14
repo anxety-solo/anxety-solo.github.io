@@ -50,7 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('sortChanged', (e) => {
         const sortedRepos = sortRepositories(window.currentRepos, e.detail.sortType);
-        displayRepos(sortedRepos);
     });
 });
 
@@ -69,33 +68,4 @@ function sortRepositories(repos, sortType) {
                 return 0;
         }
     });
-}
-
-async function fetchRepos() {
-    const loader = document.querySelector('.loader');
-    const container = document.getElementById('reposContainer');
-
-    try {
-        const response = await fetch('https://api.github.com/users/anxety-solo/repos');
-
-        if (!response.ok) {
-            showErrorPage(response.status);
-            return;
-        }
-
-        const repos = (await response.json())
-            .filter(repo => !repo.fork);
-
-        const reposWithLanguages = await getReposWithLanguages(repos);
-
-        const sortedRepos = sortReposByStars(reposWithLanguages);
-        window.currentRepos = sortedRepos;
-        displayRepos(sortedRepos);
-
-        displayRepos(sortedRepos);
-    } catch (error) {
-        showErrorPage(error.status || 500);
-    } finally {
-        hideLoader(loader);
-    }
 }

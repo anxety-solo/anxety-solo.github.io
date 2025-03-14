@@ -2,7 +2,7 @@
 .sort-container {
     position: relative;
     display: inline-block;
-    margin: 1rem auto;
+    /* margin: 1rem auto; */
     z-index: 500;
 }
 
@@ -74,22 +74,4 @@
     color: var(--primary-color);
     font-size: 1.4em;
     line-height: 0;
-}
-
-@media (max-width: 768px) {
-    .sort-container {
-        margin: 1rem;
-        width: calc(100% - 2rem);
-    }
-
-    .sort-btn {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .sort-dropdown {
-        width: 100%;
-        right: auto;
-        left: 0;
-    }
 }

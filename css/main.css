@@ -36,6 +36,7 @@ body {
     letter-spacing: 4px;
 }
 
+
 /* Card container styles */
 .container {
     display: grid;
@@ -52,7 +53,7 @@ body {
     flex-direction: column;
     min-height: 200px;
     background-color: var(--background);
-    backdrop-filter: var(--blur);
+    /* backdrop-filter: var(--blur); */
     border-radius: 15px;
     padding: var(--card-padding);
     color: var(--text-color);
@@ -102,8 +103,8 @@ body {
     background-color: var(--button-color-hover);
 }
 
+
 /* GitHub Profile Stats */
-/* Languages container */
 .languages-container {
     position: absolute;
     top: 0;
@@ -164,18 +165,29 @@ body {
     font-size: 0.9rem;
 }
 
-/* Sidebar Container */
+
+/* Sidebar's Container */
 .sidebar {
     position: fixed;
-    top: 1.5rem;
-    left: 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
     z-index: 1000;
+    transition: transform 0.3s ease;
 }
 
-/* Sidebar Items */
+.sidebar.left-sidebar {
+    top: 1.5rem;
+    left: 1.5rem;
+}
+
+.sidebar.right-sidebar {
+    top: 1.5rem;
+    right: 1.5rem;
+    align-items: flex-end;
+}
+
+/* (Left) Sidebar Items */
 .sidebar-item {
     display: flex;
     align-items: center;
@@ -239,7 +251,6 @@ body {
     position: absolute;
 }
 
-/* Dark Theme Adjustments */
 .sidebar-item--theme .fa-sun,
 body.dark-theme .sidebar-item--theme .fa-moon {
     opacity: 0;
@@ -259,6 +270,7 @@ body.dark-theme .sidebar-item--theme .fa-sun {
 
 /* Media queries */
 @media (max-width: 768px) {
+    /* Body */
     .header h1 {
         font-size: 3rem;
     }
@@ -267,12 +279,12 @@ body.dark-theme .sidebar-item--theme .fa-sun {
         grid-template-columns: 1fr;
         padding: 25px;
     }
-
     .card {
         touch-action: pan-y;
     }
 
-    .sidebar {
+    /*Left-Sidebar */
+    .sidebar.left-sidebar {
         flex-direction: row;
         top: auto;
         bottom: 1rem;
@@ -280,18 +292,39 @@ body.dark-theme .sidebar-item--theme .fa-sun {
         transform: translateX(-50%);
         gap: 0.5rem;
     }
-
     .sidebar-item {
         width: 48px !important;
         height: 48px;
         border-radius: 50% !important;
         pointer-event: auto;
     }
-
     .sidebar-text {
         display: none;
     }
+    
+    /* Right-Sidebar */
+    .sidebar.right-sidebar {
+        position: static;
+        order: 1;
+        width: 100%;
+        align-items: center;
+        text-align: center;
+    }
+    /*
+    .sort-container {
+        text-align: center;
+    }
+    */
+    .sort-btn {
+        margin: 0 auto;
+    }
+    .sort-dropdown {
+        left: 50% !important;
+        transform: translate(-50%, 0) !important;
+        width: 300px;
+    }
 }
+
 
 /* Error Page */
 .error-container {

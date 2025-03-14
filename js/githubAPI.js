@@ -1,42 +1,36 @@
-async function fetchRepos() {
-    const loader = document.querySelector('.loader');
-    const container = document.getElementById('reposContainer');
+let cachedRepos = null;
 
+async function fetchRepos() {
+    if (cachedRepos) {
+        displayRepos(cachedRepos);
+        return;
+    }
+
+    const loader = document.querySelector('.loader');
     try {
         const response = await fetch('https://api.github.com/users/anxety-solo/repos');
-
-        if (!response.ok) {
-            showErrorPage(response.status);
-            return;
-        }
-
+        if (!response.ok) throw new Error(response.status);
+        
         const repos = (await response.json())
             .filter(repo => !repo.fork);
-
-        const reposWithLanguages = await getReposWithLanguages(repos);
-        const sortedRepos = sortReposByStars(reposWithLanguages);
-
-        window.currentRepos = sortedRepos;
-
-        displayRepos(sortedRepos);
+        
+        cachedRepos = await getReposWithLanguages(repos);
+        displayRepos(sortRepositories(cachedRepos, 'stars'));
     } catch (error) {
-        showErrorPage(error.status || 500);
+        showErrorPage(error.message || 500);
     } finally {
         hideLoader(loader);
     }
 }
 
-async function getReposWithLanguages(repos) {
-    return Promise.all(repos.map(async repo => {
-        const langResponse = await fetch(repo.languages_url);
-        const languages = await langResponse.json();
-        return {...repo, languages: Object.keys(languages)};
-    }));
-}
+// Sorting Repos
+document.addEventListener('sortChanged', (e) => {
+    const sorted = sortRepositories(cachedRepos, e.detail.sortType);
+    displayRepos(sorted);
+});
 
-function sortReposByStars(repos) {
-    return [...repos].sort((a, b) => b.stargazers_count - a.stargazers_count);
-}
+
+// Create Card - Get GitHub API Stats
 
 function displayRepos(repos) {
     window.currentRepos = repos;
@@ -76,6 +70,14 @@ function createRepoCard(repo, index) {
     return card;
 }
 
+async function getReposWithLanguages(repos) {
+    return Promise.all(repos.map(async repo => {
+        const langResponse = await fetch(repo.languages_url);
+        const languages = await langResponse.json();
+        return {...repo, languages: Object.keys(languages)};
+    }));
+}
+
 function addLanguageIcons(container, languages) {
     languages.slice(0, 5).forEach(lang => {
         const icon = document.createElement('i');
@@ -94,22 +96,11 @@ function createStatItem(iconType, count) {
     `;
 }
 
-function showErrorPage(statusCode) {
-    const container = document.getElementById('reposContainer');
-    const errorType = statusCode === 404 ? '404' : 'Error';
-    const errorMessage = statusCode === 404 
-        ? 'Repositories not found' 
-        : 'Failed to load data';
 
-    container.innerHTML = `
-        <div class="error-container">
-            <h1>${errorType}</h1>
-            <p>${errorMessage}</p>
-        </div>
-    `;
+// Special functions
 
-    hideLoader(document.querySelector('.loader'));
-    window.history.replaceState({}, document.title, window.location.pathname);
+function sortReposByStars(repos) {
+    return [...repos].sort((a, b) => b.stargazers_count - a.stargazers_count);
 }
 
 function hideLoader(loader) {
@@ -134,5 +125,25 @@ function getLanguageIcon(language) {
     };
     return iconMap[language] || iconMap.Default;
 }
+
+// Get Error Data Page
+function showErrorPage(statusCode) {
+    const container = document.getElementById('reposContainer');
+    const errorType = statusCode === 404 ? '404' : 'Error';
+    const errorMessage = statusCode === 404 
+        ? 'Repositories not found' 
+        : 'Failed to load data';
+
+    container.innerHTML = `
+        <div class="error-container">
+            <h1>${errorType}</h1>
+            <p>${errorMessage}</p>
+        </div>
+    `;
+
+    hideLoader(document.querySelector('.loader'));
+    window.history.replaceState({}, document.title, window.location.pathname);
+}
+
 
 document.addEventListener('DOMContentLoaded', fetchRepos);
