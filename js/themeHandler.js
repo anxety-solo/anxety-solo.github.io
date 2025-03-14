@@ -26,7 +26,7 @@ class ThemeHandler {
             document.body.classList.remove(isDark ? 'dark-theme' : 'light-theme');
             document.body.classList.add(isDark ? 'light-theme' : 'dark-theme');
             localStorage.setItem('theme', isDark ? 'light' : 'dark');
-            
+
             this.isProcessing = false;
         });
     }

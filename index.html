@@ -13,6 +13,7 @@
 
     <!-- Style -->
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/sort.css">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/scrollbar.css">
 
@@ -49,12 +50,26 @@
     <header class="header">
         <h1>ANXETY</h1>
         <h5>My GitHub Repositories :3</h5>
+
+        <div class="sort-container">
+            <button class="sort-btn" aria-label="Sort repositories">
+                <i class="fas fa-sort"></i>
+                Sorting
+            </button>
+            <ul class="sort-dropdown">
+                <li data-sort="stars">By stars</li>
+                <li data-sort="forks">By fork</li>
+                <li data-sort="updated">By update</li>
+                <li data-sort="name">By name</li>
+            </ul>
+        </div>
     </header>
-    
+
     <!-- Repositories Container -->
     <div class="container" id="reposContainer"></div>
 
     <script src="js/githubAPI.js"></script>
     <script src="js/themeHandler.js" defer></script>
+    <script src="js/sort.js" defer></script>
 </body>
 </html>

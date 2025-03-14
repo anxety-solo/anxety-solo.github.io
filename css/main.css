@@ -267,7 +267,7 @@ body.dark-theme .sidebar-item--theme .fa-sun {
         grid-template-columns: 1fr;
         padding: 25px;
     }
-    
+
     .card {
         touch-action: pan-y;
     }

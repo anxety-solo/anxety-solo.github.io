@@ -16,6 +16,8 @@ async function fetchRepos() {
         const reposWithLanguages = await getReposWithLanguages(repos);
         const sortedRepos = sortReposByStars(reposWithLanguages);
 
+        window.currentRepos = sortedRepos;
+
         displayRepos(sortedRepos);
     } catch (error) {
         showErrorPage(error.status || 500);
@@ -37,6 +39,8 @@ function sortReposByStars(repos) {
 }
 
 function displayRepos(repos) {
+    window.currentRepos = repos;
+
     const container = document.getElementById('reposContainer');
     const fragment = document.createDocumentFragment();
 
