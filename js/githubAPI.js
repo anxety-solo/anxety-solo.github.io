@@ -66,7 +66,7 @@ function createRepoCard(repo, index) {
     `;
 
     addLanguageIcons(card.querySelector('.languages-container'), repo.languages);
-    card.style.animationDelay = `${index * 50}ms`;
+    card.style.animationDelay = `${index * 25}ms`;
     return card;
 }
 
