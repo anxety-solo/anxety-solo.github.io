@@ -161,6 +161,7 @@ Navigation
 .avatar-container {
   aspect-ratio: 1;
   position: relative;
+  min-width: 120px;
   width: min(250px, 30vw);
   max-width: 100%;
   margin: 0 auto;
@@ -172,6 +173,10 @@ Navigation
   user-select: none;
   overflow: hidden;
   transition: transform var(--transition-speed) ease;
+  
+  @media (max-width: 480px) {
+    width: 50vw;
+  }
 
   &:hover {
     transform: rotate(2deg) scale(1.05);
@@ -259,6 +264,7 @@ Navigation
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  touch-action: manipulation;
 }
 
 .search-container {
@@ -776,12 +782,13 @@ Devices Adaptation
   /* Stats container behavior */
   .stats-container {
     flex-wrap: wrap;
-    justify-content: center;
     gap: 1rem;
   }
   .stat-item {
+    flex: 1 1 45%;
     font-size: 0.9rem;
-    padding: 0.6rem 1rem;
+    min-width: 160px;
+    padding: 0.8rem;
   }
 
   /* Repository controls */
@@ -821,8 +828,6 @@ Devices Adaptation
   .profile-section {
     grid-template-columns: 1fr 1.8fr;
     align-items: center;
-    padding: 1.5rem;
-    gap: 2rem;
   }
 
   /* Avatar sizing */
@@ -860,5 +865,14 @@ Devices Adaptation
     font-size: 0.9rem;
     min-width: 160px;
     padding: 0.8rem;
+  }
+}
+
+
+/* Optimize */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
   }
 }
