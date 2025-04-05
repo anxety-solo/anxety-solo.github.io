@@ -1,83 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ANXETY | GitHub Profile</title>
-    <link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
+    <link id="dynamic-favicon" rel="icon" type="image/png">
+    <title>GitHub Profile</title>
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=M+PLUS+Rounded+1c&family=Press+Start+2P&display=swap" rel="stylesheet">
 
-    <!-- Style -->
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/theme.css">
-    <link rel="stylesheet" href="css/scrollbar.css">
-    <link rel="stylesheet" href="css/sortingGitRepo.css">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css">
-</head>
-<body>
-    <!-- Loader Spiner -->
-    <div class="loader"></div>
-
-
-    <!-- Header -->
-    <header class="header">
-        <h1>ANXETY</h1>
-        <h5>My GitHub Repositories :3</h5>
-    </header>
-
-
-    <!-- Sidebar Container -->
-    <!-- Left-Sidebar -->
-    <div class="sidebar left-sidebar">
-        <a href="https://github.com/anxety-solo" class="sidebar-item" aria-label="GitHub profile">
-            <div class="sidebar-icon">
-                <i class="fab fa-github"></i>
-            </div>
-            <span class="sidebar-text">Visit GitHub</span>
-        </a>
-
-        <a href="https://discord.gg/eemJdDusvH" target="_blank" class="sidebar-item" aria-label="Discord Server">
-            <div class="sidebar-icon">
-                <i class="fab fa-discord"></i>
-            </div>
-            <span class="sidebar-text">Join Discord</span>
-        </a>
-
-        <button class="theme-toggle sidebar-item sidebar-item--theme">
-            <div class="sidebar-icon">
-                <i class="fas fa-moon theme-icon"></i>
-                <i class="fas fa-sun theme-icon"></i>
-            </div>
-        </button>
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+  </head>
+  <body>
+    <!-- Background | WIP -->
+    
+    <!-- Loading-Spinner -->
+    <div class="loading-spinner">
+      <img src="assets/sexy_gura.gif" class="loading-image">
+      <div class="spinner"></div>
+      <p class="loading-text">Loading...</p>
     </div>
 
-    <!-- Right-Sidebar -->
-    <div class="sidebar right-sidebar">
-        <div class="sort-container">        
-            <button class="sort-btn" aria-label="Sort repositories">
-                <i class="fas fa-sort"></i>
-                Sorting by
-            </button>
-            <ul class="sort-dropdown">
-                <li data-sort="stars">Most starred</li>
-                <li data-sort="forks">Fork count</li>
-                <li data-sort="updated">Recently update</li>
-                <li data-sort="name">Name</li>
-            </ul>
+    <!-- Navigation Panel -->
+    <nav class="nav-container">
+      <a href="#" class="nav-brand disabled"></a>
+      <div class="nav-links">
+        <a id="githubProfileLink" class="nav-link" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+        <a href="https://discord.gg/eemJdDusvH" class="nav-link" target="_blank">
+          <i class="fab fa-discord"></i>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="main-container">
+      <!-- Profile Section -->
+      <section class="profile-section">
+        <div class="avatar-container">
+          <img id="userAvatar" src="" class="avatar">
         </div>
-    </div>
 
+        <div class="profile-info">
+          <h1 class="profile-name" id="userName"></h1>
+          <div class="bio-container" id="userBio">
+            <p class="profile-bio"></p>
+            <span class="user-login"></span>
+          </div>
+          <div class="stats-container" id="userStats"></div>
+        </div>
+      </section>
 
-    <!-- Repositories Container -->
-    <div class="container" id="reposContainer"></div>
+      <!-- Repositories Section -->
+      <section id="repositories">
+        <div class="section-header">
+          <h2 class="section-title">Public Repositories</h2>
+          
+          <div class="repo-controls">
+            <div class="search-container">
+              <input type="text" id="repoSearch" placeholder="Search repositories...">
+              <i class="fas fa-search"></i>
+            </div>
 
-    <script src="js/githubAPI.js"></script>
-    <script src="js/themeHandler.js" defer></script>
-    <script src="js/sortingGitRepo.js" defer></script>
-</body>
+            <div class="custom-select">
+              <div class="select-header">
+                <span>Sort by</span>
+                <i class="fas fa-chevron-down"></i>
+              </div>
+              <div class="select-options">
+                <div data-sort="stars">Stars</div>
+                <div data-sort="updated">Last Updated</div>
+                <div data-sort="name">Name</div>
+                <div data-sort="forks">Forks</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Repositories Grid -->
+        <div class="repos-grid" id="reposContainer">
+          <!-- Filled card by JS -->
+        </div>
+      </section>
+    </main>
+    
+    <template id="error-template">
+      <div class="error-message">
+        <i class="fas fa-exclamation-triangle error-icon"></i>
+        <h2 class="error-title"></h2>
+        <p class="error-description"></p>
+        <button class="retry-button">
+          <i class="fas fa-redo-alt"></i>
+          Try Again
+        </button>
+      </div>
+    </template>
+
+    <script src="js/script.js"></script>
+  </body>
 </html>
