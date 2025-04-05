@@ -1,6 +1,6 @@
 /* ==========================================================================
-   Base Styles & Variables
-   ========================================================================== */
+Base Styles & Variables
+========================================================================== */
 :root {
   /* Color Palette */
   --anx-c-bg: #0f0f12;
@@ -15,12 +15,12 @@
   --anx-c-brand-3: #3e63dd;
   --anx-c-divider: #2e2e32;
   --anx-c-button: #36363d;
-  
+
   /* Typography */
   --anx-font-heading: 'Press Start 2P', cursive;
   --anx-font-family-base: 'M PLUS Rounded 1c', sans-serif;
   --anx-font-special: 'Comic Neue', cursive;
-  
+
   /* Spacing & Sizing */
   --container-width: 1300px;
   --anx-nav-height: 70px;
@@ -32,8 +32,8 @@
 
 
 /* ==========================================================================
-   Base Reset & Global Styles
-   ========================================================================== */
+Base Reset & Global Styles
+========================================================================== */
 *,
 *::before,
 *::after {
@@ -54,8 +54,8 @@ body {
 
 
 /* ==========================================================================
-   Navigation
-   ========================================================================== */
+Navigation
+========================================================================== */
 .nav-container {
   position: fixed;
   display: flex;
@@ -313,19 +313,19 @@ body {
     justify-content: space-between;
     cursor: pointer;
     transition: all var(--transition-speed) ease;
-    
+
     i { /* Arrow */
       font-size: 0.8rem;
       transition: transform var(--transition-speed) ease;
     }
   }
-  
+
   &.active {
     .select-header {
       outline: none;
       border-color: var(--anx-c-brand-2);
       box-shadow: 0 0 0 2px rgba(92, 115, 231, 0.05);
-      
+
       i {
         transform: rotate(180deg);
       }
@@ -378,12 +378,12 @@ body {
     padding-left: 1.25rem;
     color: var(--anx-c-brand-1);
     background: rgba(168, 177, 255, 0.05);
-    
+
     &::before {
       opacity: 1;
     }
   }
-  
+
   &[data-sort="stars"]::before { background: #ffd700; }
   &[data-sort="updated"]::before { background: #3a5ccc; }
   &[data-sort="name"]::before { background: #00c853; }
@@ -607,8 +607,8 @@ body {
 
 
 /* ==========================================================================
-   Loading Spinner
-   ========================================================================== */
+Loading Spinner
+========================================================================== */
 .loading-spinner {
   position: fixed;
   top: 0;
@@ -661,8 +661,8 @@ body {
 
 
 /* ==========================================================================
-   Error Message Loading Screen
-   ========================================================================== */
+Error Message Loading Screen
+========================================================================== */
 .error-message {
   display: flex;
   flex-direction: column;
@@ -736,8 +736,8 @@ body {
 
 
 /* ==========================================================================
-   Devices Adaptation
-   ========================================================================== */
+Devices Adaptation
+========================================================================== */
 /* Breakpoint: Medium devices (tablets, less than 768px) */
 @media (max-width: 768px) {
   .main-container {
@@ -758,13 +758,10 @@ body {
   /* Profile grid layout */
   .profile-section {
     grid-template-columns: 1fr;
-    margin-bottom: 2rem;
-    padding: 1.5rem;
     background: linear-gradient(transparent 5%, var(--anx-c-bg-soft) 85%);
     border: none;
-    gap: 1.5rem;
   }
-  
+
   /* Profile text styling */
   .profile-name {
     text-align: center;
@@ -778,6 +775,7 @@ body {
 
   /* Stats container behavior */
   .stats-container {
+    flex-wrap: wrap;
     justify-content: center;
     gap: 1rem;
   }
@@ -787,9 +785,12 @@ body {
   }
 
   /* Repository controls */
+  .section-title {
+    font-size: 1.35rem;
+    padding: 0;
+  }
   .repo-controls {
     flex-direction: column;
-    margin-top: 1rem;
     background: var(--anx-c-bg-elv);
     gap: 1rem;
   }
@@ -801,8 +802,6 @@ body {
   /* Repository grid */
   .repos-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
-    margin-top: 1.5rem;
   }
   .repo-card {
     padding: 1.2rem;
@@ -825,14 +824,14 @@ body {
     padding: 1.5rem;
     gap: 2rem;
   }
-  
+
   /* Avatar sizing */
   .avatar-container {
     align-self: center;
     width: min(220px, 35vw);
     margin: 0 auto;
   }
-  
+
   /* Profile text styling */
   .profile-name {
     font-size: 2rem;
@@ -850,7 +849,7 @@ body {
     top: 1rem;
     right: 1rem;
   }
-  
+
   /* Stats container behavior */
   .stats-container {
     flex-wrap: wrap;

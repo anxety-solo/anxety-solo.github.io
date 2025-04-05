@@ -5,12 +5,6 @@ const CONFIG = {
   githubUsername: 'anxety-solo',
   cacheTTL: 900000, // 15 min
   apiBase: 'https://api.github.com/users',
-  selectOptions: {
-    stars: 'stars',
-    updated: 'updated',
-    name: 'name',
-    forks: 'forks'
-  },
   languageColors: {
     JavaScript: '#f1e05a',
     Python: '#3572A5',
@@ -71,10 +65,10 @@ const Utils = {
   },
 
   sorting: {
-    [CONFIG.selectOptions.stars]: (a, b) => b.stargazers_count - a.stargazers_count,
-    [CONFIG.selectOptions.updated]: (a, b) => new Date(b.updated_at) - new Date(a.updated_at),
-    [CONFIG.selectOptions.name]: (a, b) => a.name.localeCompare(b.name),
-    [CONFIG.selectOptions.forks]: (a, b) => b.forks_count - a.forks_count
+    ['stars']: (a, b) => b.stargazers_count - a.stargazers_count,
+    ['updated']: (a, b) => new Date(b.updated_at) - new Date(a.updated_at),
+    ['name']: (a, b) => a.name.localeCompare(b.name),
+    ['forks']: (a, b) => b.forks_count - a.forks_count
   }
 };
 
@@ -222,7 +216,7 @@ const RepoSystem = {
       return;
     }
 
-    this.allRepos = [...repos].sort(Utils.sorting[CONFIG.selectOptions.stars]);
+    this.allRepos = [...repos].sort(Utils.sorting['stars']);
     this.setupSearch();
     this.render();
   },
