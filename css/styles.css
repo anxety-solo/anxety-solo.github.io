@@ -173,7 +173,7 @@ Navigation
   user-select: none;
   overflow: hidden;
   transition: transform var(--transition-speed) ease;
-  
+
   @media (max-width: 480px) {
     width: 50vw;
   }
@@ -667,6 +667,35 @@ Loading Spinner
 
 
 /* ==========================================================================
+Users-PopUp-DATA
+========================================================================== */
+.user-popup {
+  position: fixed;
+  bottom: 20px;
+  right: -300px;
+  padding: 1rem 2rem;
+  color: var(--anx-c-text-1);
+  background: var(--anx-c-bg-soft);
+  border: 2px solid var(--anx-c-divider);
+  border-radius: var(--anx-border-radius);
+  box-shadow: var(--anx-shadow);
+  opacity: 0;
+  z-index: 1000;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.show {
+    right: 20px;
+    opacity: 1;
+  }
+}
+
+.popup-username {
+  color: var(--anx-c-brand-1);
+  font-weight: 700;
+}
+
+
+/* ==========================================================================
 Error Message Loading Screen
 ========================================================================== */
 .error-message {
@@ -706,7 +735,7 @@ Error Message Loading Screen
 .retry-button {
   padding: 0.75rem 2rem;
   font-size: 1rem;
-  background-color: var(--anx-c-brand-2);
+  background: var(--anx-c-brand-2);
   color: var(--anx-c-text-1);
   border: none;
   border-radius: var(--anx-border-radius);
@@ -718,7 +747,7 @@ Error Message Loading Screen
   box-shadow: var(--anx-shadow);
 
   &:hover {
-    background-color: var(--anx-c-brand-3);
+    background: var(--anx-c-brand-3);
     transform: translateY(-2px);
   }
 
@@ -738,7 +767,6 @@ Error Message Loading Screen
   background: var(--anx-c-bg);
   pointer-events: auto;
 }
-
 
 
 /* ==========================================================================

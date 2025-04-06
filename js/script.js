@@ -7,21 +7,22 @@ const CONFIG = {
   apiBase: 'https://api.github.com/users',
   languageColors: {
     JavaScript: '#f1e05a',
-    Python: '#3572A5',
+    Python: '#3572a5',
     Java: '#b07219',
     TypeScript: '#3178c6',
-    PHP: '#4F5D95',
+    PHP: '#4f5d95',
     Ruby: '#701516',
     'C++': '#f34b7d',
     'C#': '#178600',
     Swift: '#ffac45',
-    Kotlin: '#A97BFF',
-    Go: '#00ADD8',
+    Kotlin: '#a97bff',
+    Go: '#00add8',
     Rust: '#dea584',
     HTML: '#e34c26',
     CSS: '#563d7c',
     SCSS: '#c6538c',
-    Shell: '#89e051'
+    Shell: '#89e051',
+    'Jupyter Notebook': '#da5b0b'
   }
 };
 
@@ -76,10 +77,12 @@ const Utils = {
 // Data Fetching
 // =============================================================================
 document.addEventListener('DOMContentLoaded', async () => {
-  // Load-Spinner
   const loadingSpinner = document.querySelector('.loading-spinner');
+  const urlParams = new URLSearchParams(window.location.search);
+  const userParam = urlParams.get('user');
 
-  // Load Data
+  if (userParam) CONFIG.githubUsername = userParam;
+
   try {
     const urls = {
       user: `${CONFIG.apiBase}/${CONFIG.githubUsername}`,
@@ -95,7 +98,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     RepoSystem.init(reposData);
     new CustomSelect(DOM.customSelect);
 
-    // Remove Load-Spiner After Load Data
+    // PopUp
+    if (userParam) showUserPopup(userData.login);
+
+    // Hide Load-Spinner
     loadingSpinner.style.opacity = '0';
     setTimeout(() => loadingSpinner.remove(), 300);
   } catch (error) {
@@ -120,6 +126,14 @@ const ApiService = {
     return data;
   }
 };
+
+function showUserPopup(username) {
+  const popup = document.getElementById('user-popup');
+  const usernameSpan = popup.querySelector('.popup-username');
+  usernameSpan.textContent = `@${username}`;
+  popup.classList.add('show');
+  setTimeout(() => popup.classList.remove('show'), 5000);
+}
 
 // =============================================================================
 // Profile System
@@ -211,8 +225,10 @@ const RepoSystem = {
   allRepos: [],
 
   init(repos) {
-    if (!repos || repos.length === 0) {
-      this.showNoReposMessage();
+    const reposSection = document.getElementById('repositories');
+
+    if (!repos?.length) {
+      this.displayMessage(reposSection, 'fa-folder-open', 'No public repositories found.');
       return;
     }
 
@@ -221,18 +237,21 @@ const RepoSystem = {
     this.render();
   },
 
-  showNoReposMessage() {
-    const reposSection = document.getElementById('repositories');
-    reposSection.innerHTML = `
-      <div class="no-repos-message">
-        <i class="fas fa-folder-open"></i>
-        <p>No public repositories found.</p>
-      </div>
-    `;
+  render(repos = this.allRepos) {
+    if (!repos.length) {
+      this.displayMessage(DOM.reposContainer, 'fa-search-minus', 'No repositories found matching your search.');
+      return;
+    }
+    DOM.reposContainer.innerHTML = repos.map(repo => this.createRepoCard(repo)).join('');
   },
 
-  render(repos = this.allRepos) {
-    DOM.reposContainer.innerHTML = repos.map(repo => this.createRepoCard(repo)).join('');
+  displayMessage(container, iconClass, text) {
+    container.innerHTML = `
+      <div class="no-repos-message">
+        <i class="fas ${iconClass}"></i>
+        <p>${text}</p>
+      </div>
+    `;
   },
 
   createRepoCard(repo) {
