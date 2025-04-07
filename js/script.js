@@ -4,6 +4,7 @@
 const CONFIG = {
   githubUsername: 'anxety-solo',
   cacheTTL: 900000, // 15 min
+  starredPerPage: 100,
   apiBase: 'https://api.github.com/users',
   languageColors: {
     JavaScript: '#f1e05a',
@@ -79,35 +80,56 @@ const Utils = {
 document.addEventListener('DOMContentLoaded', async () => {
   const loadingSpinner = document.querySelector('.loading-spinner');
   const urlParams = new URLSearchParams(window.location.search);
-  const userParam = urlParams.get('user');
+  const userParam = urlParams.get('user') || urlParams.get('u');
 
   if (userParam) CONFIG.githubUsername = userParam;
 
   try {
     const urls = {
       user: `${CONFIG.apiBase}/${CONFIG.githubUsername}`,
-      repos: `${CONFIG.apiBase}/${CONFIG.githubUsername}/repos`
+      repos: `${CONFIG.apiBase}/${CONFIG.githubUsername}/repos`,
+      starred: `${CONFIG.apiBase}/${CONFIG.githubUsername}/starred?per_page=${CONFIG.starredPerPage}`
     };
 
-    const [userData, reposData] = await Promise.all([
+    const [userData, reposData, starredResponse] = await Promise.all([
       ApiService.fetchWithCache(urls.user),
-      ApiService.fetchWithCache(urls.repos)
+      ApiService.fetchWithCache(urls.repos),
+      fetch(urls.starred) // Отдельный запрос для получения заголовков
     ]);
 
-    ProfileSystem.init(userData);
+    // Starred Count
+    const starredCount = await getTotalStarredCount(starredResponse);
+
+    // Init
+    ProfileSystem.init(userData, starredCount);
     RepoSystem.init(reposData);
     new CustomSelect(DOM.customSelect);
 
-    // PopUp
     if (userParam) showUserPopup(userData.login);
 
-    // Hide Load-Spinner
     loadingSpinner.style.opacity = '0';
     setTimeout(() => loadingSpinner.remove(), 300);
   } catch (error) {
     ErrorHandler.handle(error, loadingSpinner);
   }
 });
+
+async function getTotalStarredCount(response) {
+  try {
+    const linkHeader = response.headers.get('Link');
+    const data = await response.json();
+
+    if (!linkHeader) return data.length;
+
+    const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
+    return lastPageMatch 
+      ? (parseInt(lastPageMatch[1]) - 1) * CONFIG.starredPerPage + data.length
+    : data.length;
+  } catch (error) {
+    console.error('Error fetching starred count:', error);
+    return 'N/A';
+  }
+}
 
 const ApiService = {
   async fetchWithCache(url) {
@@ -139,10 +161,10 @@ function showUserPopup(username) {
 // Profile System
 // =============================================================================
 const ProfileSystem = {
-  init(user) {
+  init(user, starredCount) {
     this.updateDocumentMeta(user);
     this.updateFavicon(user.avatar_url);
-    this.updateProfileInfo(user);
+    this.updateProfileInfo(user, starredCount);
     this.setupNavigation();
   },
 
@@ -183,31 +205,45 @@ const ProfileSystem = {
     });
   },
 
-  updateProfileInfo(user) {
+  updateProfileInfo(user, starredCount) {
     DOM.navBrand.textContent = user.name || CONFIG.githubUsername;
     DOM.githubProfileLink.href = user.html_url;
     DOM.userAvatar.src = user.avatar_url;
     DOM.userName.textContent = user.name || user.login;
-    DOM.userBio.querySelector('.profile-bio').textContent = user.bio || 'No bio available';
+
+    const bioElement = DOM.userBio.querySelector('.profile-bio');
+    bioElement.textContent = user.bio || 'No bio available';
 
     if (user.login) {
-      DOM.userBio.querySelector('.user-login').textContent = `@${user.login}`;
+      const loginElement = DOM.userBio.querySelector('.user-login');
+      loginElement.textContent = `@${user.login}`;
     }
 
     DOM.userStats.innerHTML = this.generateStatsHTML([
       { icon: 'people', value: user.followers, label: 'Followers' },
       { icon: 'remove_red_eye', value: user.following, label: 'Following' },
-      { icon: 'storage', value: user.public_repos, label: 'Repos' }
+      { icon: 'storage', value: user.public_repos, label: 'Repos' },
+      { 
+        icon: 'star', 
+        value: starredCount,
+        label: 'Starred', 
+        href: `https://github.com/${user.login}?tab=stars`,
+        className: 'starred'
+      }
     ]);
   },
 
   generateStatsHTML(stats) {
-    return stats.map(({ icon, value, label }) => `
-      <div class="stat-item">
+    return stats.map(({ icon, value, label, href, className }) => {
+      const content = `
         <span class="material-icons">${icon}</span>
         <span>${value} ${label}</span>
-      </div>
-    `).join('');
+      `;
+
+      return href
+        ? `<a href="${href}" class="stat-item ${className}" target="_blank">${content}</a>`
+      : `<div class="stat-item ${className}">${content}</div>`;
+    }).join('');
   },
 
   setupNavigation() {
