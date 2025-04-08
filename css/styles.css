@@ -123,7 +123,9 @@ Navigation
 }
 
 
-/* Main Content */
+/* ==========================================================================
+Main Content
+========================================================================== */
 .main-container {
   max-width: var(--container-width);
   margin: var(--anx-nav-height) auto 0;
@@ -135,6 +137,7 @@ Navigation
 .profile-section {
   position: relative;
   display: grid;
+  align-items: start;
   margin-bottom: 4.5rem;
   padding: 2rem;
   background: var(--anx-c-bg-soft);
@@ -197,15 +200,17 @@ Navigation
 .profile-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 1rem;
 }
 
 .profile-name {
   font-family: var(--anx-font-heading);
-  font-size: 2.6rem;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
   font-weight: 700;
   color: var(--anx-c-brand-1);
   text-shadow: 2px 2px var(--anx-c-brand-2);
+  word-break: break-word;
 }
 
 .profile-bio {
@@ -216,25 +221,23 @@ Navigation
 
 .stats-container {
   display: flex;
+  flex-wrap: wrap;
   margin-top: 1rem;
   gap: 2rem;
 }
 
 .stat-item {
   display: flex;
+  flex: 1;
   align-items: center;
-  padding: 0.75rem 1.25rem;
+  padding: 1rem;
   background: var(--anx-c-bg-alt);
   border-radius: var(--anx-border-radius);
   gap: 0.5rem;
-}
-
-/* Stats Hover Effects */
-.stat-item {
-  transition: all var(--transition-speed) ease;
   cursor: pointer;
   text-decoration: none;
-
+  transition: all var(--transition-speed) ease;
+  
   &:hover {
     background: rgba(168, 177, 255, 0.15);
   }
@@ -811,11 +814,18 @@ Devices Adaptation
     background: linear-gradient(transparent 5%, var(--anx-c-bg-soft) 85%);
     border: none;
   }
+  
+  .stat-item {
+    flex: 1 1 45%;
+    min-width: 160px;
+    font-size: 0.9rem;
+    padding: 0.8rem;
+  }
 
   /* Profile text styling */
   .profile-name {
     text-align: center;
-    font-size: 1.8rem;
+    font-size: clamp(1.5rem, 6vw, 1.8rem);
   }
   /* Login positioning */
   .user-login {
@@ -866,8 +876,8 @@ Devices Adaptation
   }
 }
 
-/* Breakpoint: Medium-large devices (769px-950px) */
-@media (min-width: 769px) and (max-width: 950px) {
+/* Breakpoint: Medium-large devices (769px-1300px) */
+@media (min-width: 769px) and (max-width: 1300px) {
   /* Profile grid layout */
   .profile-section {
     grid-template-columns: 1fr 1.8fr;
