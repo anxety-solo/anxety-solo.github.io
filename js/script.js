@@ -3,9 +3,9 @@
 // =============================================================================
 const CONFIG = {
   githubUsername: 'anxety-solo',
-  cacheTTL: 900000, // 15 min
-  starredPerPage: 100,
+  cacheTTL: 900000,   // 15 min chache
   apiBase: 'https://api.github.com/users',
+  starredPerPage: 50, // For Starred Page
   languageColors: {
     JavaScript: '#f1e05a',
     Python: '#3572a5',
@@ -27,6 +27,7 @@ const CONFIG = {
   }
 };
 
+
 // =============================================================================
 // DOM Elements
 // =============================================================================
@@ -35,20 +36,24 @@ const DOM = {
   navContainer: document.querySelector('.nav-container'),
   navBrand: document.querySelector('.nav-brand'),
   githubProfileLink: document.getElementById('githubProfileLink'),
-  
+
   // Profile Section
   userAvatar: document.getElementById('userAvatar'),
   userLogin: document.getElementById('user-login'),
   userName: document.getElementById('userName'),
   userBio: document.getElementById('userBio'),
   userStats: document.getElementById('userStats'),
-  
+
   // Repositories Section
   reposSection: document.getElementById('repositories'),
-  repoSearch: document.getElementById('repoSearch'),
   reposContainer: document.getElementById('reposContainer'),
-  customSelect: document.querySelector('.custom-select')
+  repoSearch: document.getElementById('repoSearch'),
+  customSelect: document.querySelector('.custom-select'),
+  
+  // Loading
+  loadingSpinner: document.querySelector('.loading-spinner')
 };
+
 
 // =============================================================================
 // Utilities
@@ -73,50 +78,40 @@ const Utils = {
   },
 
   sorting: {
-    ['stars']: (a, b) => b.stargazers_count - a.stargazers_count,
-    ['updated']: (a, b) => new Date(b.updated_at) - new Date(a.updated_at),
-    ['name']: (a, b) => a.name.localeCompare(b.name),
-    ['forks']: (a, b) => b.forks_count - a.forks_count
+    stars: (a, b) => b.stargazers_count - a.stargazers_count,
+    updated: (a, b) => new Date(b.updated_at) - new Date(a.updated_at),
+    name: (a, b) => a.name.localeCompare(b.name),
+    forks: (a, b) => b.forks_count - a.forks_count
   }
 };
 
+
 // =============================================================================
-// Data Fetching
+// Application Initialization
 // =============================================================================
 document.addEventListener('DOMContentLoaded', async () => {
-  const loadingSpinner = document.querySelector('.loading-spinner');
   const urlParams = new URLSearchParams(window.location.search);
-  const userParam = urlParams.get('user') || urlParams.get('u');
-
-  if (userParam) CONFIG.githubUsername = userParam;
+  const userParam = urlParams.get('user') || urlParams.get('u') || CONFIG.githubUsername;
 
   try {
-    const urls = {
-      user: `${CONFIG.apiBase}/${CONFIG.githubUsername}`,
-      repos: `${CONFIG.apiBase}/${CONFIG.githubUsername}/repos`,
-      starred: `${CONFIG.apiBase}/${CONFIG.githubUsername}/starred?per_page=${CONFIG.starredPerPage}`
-    };
-
     const [userData, reposData, starredResponse] = await Promise.all([
-      ApiService.fetchWithCache(urls.user),
-      ApiService.fetchWithCache(urls.repos),
-      fetch(urls.starred)
+      GitHubService.fetchUserData(userParam),
+      GitHubService.fetchRepos(userParam),
+      GitHubService.fetchStarred(userParam)
     ]);
 
-    // Starred Count
     const starredCount = await getTotalStarredCount(starredResponse);
 
-    // Init
     ProfileSystem.init(userData, starredCount);
     RepoSystem.init(reposData);
-    new CustomSelect(DOM.customSelect);
+    new CustomSelect(DOM.customSelect, sortKey => RepoSystem.sort(sortKey));
 
-    if (userParam) showUserPopup(userData.login);
+    if (userParam !== CONFIG.githubUsername) showUserPopup(userData.login);
 
-    loadingSpinner.style.opacity = '0';
-    setTimeout(() => loadingSpinner.remove(), 300);
+    DOM.loadingSpinner.style.opacity = '0';
+    setTimeout(() => DOM.loadingSpinner.remove(), 300);
   } catch (error) {
-    ErrorHandler.handle(error, loadingSpinner);
+    ErrorHandler.handle(error, DOM.loadingSpinner);
   }
 });
 
@@ -130,19 +125,43 @@ async function getTotalStarredCount(response) {
     const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
     return lastPageMatch 
       ? (parseInt(lastPageMatch[1]) - 1) * CONFIG.starredPerPage + data.length
-    : data.length;
+      : data.length;
   } catch (error) {
     console.error('Error fetching starred count:', error);
     return 'N/A';
   }
 }
 
-const ApiService = {
-  async fetchWithCache(url) {
+function showUserPopup(username) {
+  const popup = document.getElementById('user-popup');
+  popup.querySelector('.popup-username').textContent = `@${username}`;
+  popup.classList.add('show');
+  setTimeout(() => popup.classList.remove('show'), 5000);
+}
+
+
+// =============================================================================
+// GitHub API Service
+// =============================================================================
+class GitHubService {
+  static async fetchUserData(username) {
+    return this.fetchWithCache(`${CONFIG.apiBase}/${username}`);
+  }
+
+  static async fetchRepos(username) {
+    return this.fetchWithCache(`${CONFIG.apiBase}/${username}/repos`);
+  }
+
+  static async fetchStarred(username) {
+    return fetch(`${CONFIG.apiBase}/${username}/starred`);
+  }
+
+  static async fetchWithCache(url) {
     const cacheKey = `gh-cache-${url}`;
     const cached = Utils.cache.get(cacheKey);
 
     if (cached && Utils.cache.isValid(cached, CONFIG.cacheTTL)) {
+      console.log('Using cached data for:', url); // Logging Chache
       return cached.data;
     }
 
@@ -151,44 +170,37 @@ const ApiService = {
     const data = await response.json();
 
     Utils.cache.set(cacheKey, data);
+    console.log('Fresh data fetched for:', url);
     return data;
   }
-};
-
-function showUserPopup(username) {
-  const popup = document.getElementById('user-popup');
-  const usernameSpan = popup.querySelector('.popup-username');
-  usernameSpan.textContent = `@${username}`;
-  popup.classList.add('show');
-  setTimeout(() => popup.classList.remove('show'), 5000);
 }
+
 
 // =============================================================================
 // Profile System
 // =============================================================================
-const ProfileSystem = {
-  init(user, starredCount) {
+class ProfileSystem {
+  static init(user, starredCount) {
     this.updateDocumentMeta(user);
-    this.updateFavicon(user.avatar_url);
     this.updateProfileInfo(user, starredCount);
-    this.setupNavigation();
-  },
+    this.setupNavigation(DOM.navBrand);
+  }
 
-  updateDocumentMeta(user) {
-    const title = (user.name || user.login).toUpperCase();
-    document.title = `GitHub | ${title}`;
-  },
+  static updateDocumentMeta(user) {
+    document.title = `GitHub | ${(user.name || user.login).toUpperCase()}`;
+    this.updateFavicon(user.avatar_url);
+  }
 
-  async updateFavicon(avatarUrl) {
+  static async updateFavicon(avatarUrl) {
     try {
       const canvas = await this.createRoundFavicon(avatarUrl);
-      document.getElementById('dynamic-favicon').href = canvas.toDataURL('image/png');
+      document.getElementById('dynamic-favicon').href = canvas.toDataURL();
     } catch (e) {
       console.error('Favicon error:', e);
     }
-  },
+  }
 
-  createRoundFavicon(avatarUrl) {
+  static createRoundFavicon(avatarUrl) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = 'Anonymous';
@@ -196,22 +208,22 @@ const ProfileSystem = {
 
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = canvas.height = 32;
-
         const ctx = canvas.getContext('2d');
+        canvas.width = canvas.height = 32;
+        
         ctx.beginPath();
         ctx.arc(16, 16, 16, 0, Math.PI * 2);
         ctx.clip();
         ctx.drawImage(img, 0, 0, 32, 32);
-
+        
         resolve(canvas);
       };
 
       img.onerror = reject;
     });
-  },
+  }
 
-  updateProfileInfo(user, starredCount) {
+  static updateProfileInfo(user, starredCount) {
     DOM.navBrand.textContent = user.name || CONFIG.githubUsername;
     DOM.githubProfileLink.href = user.html_url;
     DOM.userAvatar.src = user.avatar_url;
@@ -221,104 +233,79 @@ const ProfileSystem = {
     bioElement.textContent = user.bio || 'No bio available';
 
     if (user.login) {
-      const loginElement = DOM.userBio.querySelector('.user-login');
-      loginElement.textContent = `@${user.login}`;
+      DOM.userBio.querySelector('.user-login').textContent = `@${user.login}`;
     }
 
     DOM.userStats.innerHTML = this.generateStatsHTML([
-      { 
-        icon: 'people', 
-        value: user.followers, 
-        label: 'Followers',
-        href: `https://github.com/${user.login}?tab=followers`,
-        className: 'followers'
-      },
-      { 
-        icon: 'remove_red_eye', 
-        value: user.following, 
-        label: 'Following',
-        href: `https://github.com/${user.login}?tab=following`,
-        className: 'following'
-      },
-      { 
-        icon: 'storage', 
-        value: user.public_repos, 
-        label: 'Repos',
-        href: `https://github.com/${user.login}?tab=repositories`,
-        className: 'repos'
-      },
-      { 
-        icon: 'star', 
-        value: starredCount,
-        label: 'Starred', 
-        href: `https://github.com/${user.login}?tab=stars`,
-        className: 'starred'
-      }
-    ]);
-  },
+      { icon: 'people', value: user.followers, label: 'Followers', href: `?tab=followers` },
+      { icon: 'remove_red_eye', value: user.following, label: 'Following', href: `?tab=following` },
+      { icon: 'storage', value: user.public_repos, label: 'Repos', href: `?tab=repositories` },
+      { icon: 'star', value: starredCount, label: 'Starred', href: `?tab=stars` }
+    ], user.login);
+  }
 
-  generateStatsHTML(stats) {
-    return stats.map(({ icon, value, label, href, className }) => {
-      const content = `
+  static generateStatsHTML(stats, username) {
+    return stats.map(({ icon, value, label, href }) => `
+      <a href="https://github.com/${username}${href}" 
+         class="stat-item ${label.toLowerCase()}" 
+         target="_blank">
         <span class="material-icons">${icon}</span>
         <span>${value} ${label}</span>
-      `;
+      </a>
+    `).join('');
+  }
 
-      return href
-        ? `<a href="${href}" class="stat-item ${className}" target="_blank">${content}</a>`
-      : `<div class="stat-item ${className}">${content}</div>`;
-    }).join('');
-  },
-
-  setupNavigation() {
-    DOM.navBrand.addEventListener('click', (e) => {
+  static setupNavigation(navBrand) {
+    navBrand.addEventListener('click', (e) => {
       e.preventDefault();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
-};
+}
+
 
 // =============================================================================
 // Repository System
 // =============================================================================
-const RepoSystem = {
-  allRepos: [],
+class RepoSystem {
+  static allRepos = [];
 
-  init(repos) {
+  static init(repos) {
     if (!repos?.length) {
-      this.displayMessage(reposSection, 'fa-folder-open', 'No public repositories found.');
+      DOM.reposSection.innerHTML = this.displayMessage('fa-folder-open', 'No public repositories found.');
       return;
     }
 
-    this.allRepos = [...repos].sort(Utils.sorting['stars']);
+    this.allRepos = [...repos].sort(Utils.sorting.stars);
     this.setupSearch();
     this.render();
-  },
+  }
 
-  render(repos = this.allRepos) {
-    if (!repos.length) {
-      this.displayMessage(DOM.reposContainer, 'fa-search-minus', 'No repositories found matching your search.');
-      return;
-    }
-    DOM.reposContainer.innerHTML = repos.map(repo => this.createRepoCard(repo)).join('');
-  },
-
-  displayMessage(container, iconClass, text) {
-    container.innerHTML = `
+  static render(repos = this.allRepos) {
+    DOM.reposContainer.innerHTML = repos.length 
+      ? repos.map(repo => this.createRepoCard(repo)).join('')
+      : this.displayMessage('fa-search-minus', 'No repositories found matching your search.');
+  }
+  
+  static displayMessage(icon, text) {
+    return `
       <div class="no-repos-message">
-        <i class="fas ${iconClass}"></i>
+        <i class="fas ${icon}"></i>
         <p>${text}</p>
       </div>
     `;
-  },
+  }
 
-  createRepoCard(repo) {
+  // Repo-Card
+  static createRepoCard(repo) {
     return `
       <div class="repo-card ${repo.fork ? 'forked' : ''}">
         ${repo.fork ? '<div class="fork-badge">Fork</div>' : ''}
         <div class="repo-content">
           ${this.createRepoHeader(repo)}
-          ${this.createRepoDescription(repo)}
+          <div class="description-box">
+            <p class="repo-description">${repo.description || 'No description'}</p>
+          </div>
           ${this.createRepoMeta(repo)}
           <a href="${repo.html_url}" class="repo-button" target="_blank">
             <span class="material-icons">launch</span>
@@ -327,9 +314,9 @@ const RepoSystem = {
         </div>
       </div>
     `;
-  },
+  }
 
-  createRepoHeader(repo) {
+  static createRepoHeader(repo) {
     return `
       <div class="repo-header">
         <a href="${repo.html_url}" class="repo-name">${repo.name}</a>
@@ -339,17 +326,9 @@ const RepoSystem = {
         </span>
       </div>
     `;
-  },
+  }
 
-  createRepoDescription(repo) {
-    return `
-      <div class="description-box">
-        <p class="repo-description">${repo.description || 'No description'}</p>
-      </div>
-    `;
-  },
-
-  createRepoMeta(repo) {
+  static createRepoMeta(repo) {
     return `
       <div class="repo-meta">
         <span class="meta-item">
@@ -368,49 +347,51 @@ const RepoSystem = {
         </span>
       </div>
     `;
-  },
+  }
 
-  setupSearch() {
+  // Repo-Controls
+  static setupSearch() {
     DOM.repoSearch.addEventListener('input', () => {
       const term = DOM.repoSearch.value.toLowerCase();
       const filtered = this.allRepos.filter(repo => 
-                                            repo.name.toLowerCase().includes(term) ||
-                                            (repo.description?.toLowerCase().includes(term))
-                                           );
+        repo.name.toLowerCase().includes(term) ||
+        (repo.description?.toLowerCase().includes(term))
+      );
       this.render(filtered);
     });
-  },
+  }
 
-  sort(sortKey) {
+  static sort(sortKey) {
     this.allRepos.sort(Utils.sorting[sortKey]);
     this.render();
   }
-};
+}
 
 // =============================================================================
 // Custom Select Component
 // =============================================================================
 class CustomSelect {
-  constructor(container) {
+  constructor(container, callback) {
     this.container = container;
+    this.callback = callback;
     this.header = container.querySelector('.select-header');
     this.currentSort = container.querySelector('.select-header span');
     this.options = container.querySelectorAll('.select-options div');
     this.overlay = this.createOverlay();
     this.isOpen = false;
 
-    this.init();
+    this.initialize();
   }
 
   createOverlay() {
     return Utils.dom.createElement('div', 'dropdown-overlay');
   }
 
-  init() {
+  initialize() {
     this.header.addEventListener('click', (e) => this.toggle(e));
     this.options.forEach(opt => 
-                         opt.addEventListener('click', () => this.handleOptionClick(opt))
-                        );
+      opt.addEventListener('click', () => this.handleOptionClick(opt))
+    );
     document.body.appendChild(this.overlay);
     this.overlay.addEventListener('click', () => this.close());
   }
@@ -430,10 +411,11 @@ class CustomSelect {
 
   handleOptionClick(option) {
     this.currentSort.textContent = option.textContent;
-    RepoSystem.sort(option.dataset.sort);
+    this.callback(option.dataset.sort);
     this.close();
   }
 }
+
 
 // =============================================================================
 // Error Handling
