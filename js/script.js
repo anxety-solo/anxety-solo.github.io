@@ -224,7 +224,7 @@ class ProfileSystem {
   }
 
   static updateProfileInfo(user, starredCount) {
-    DOM.navBrand.textContent = user.name || CONFIG.githubUsername;
+    DOM.navBrand.textContent = user.name || user.login;
     DOM.githubProfileLink.href = user.html_url;
     DOM.userAvatar.src = user.avatar_url;
     DOM.userName.textContent = user.name || user.login;
