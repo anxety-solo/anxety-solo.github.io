@@ -269,6 +269,7 @@ class ProfileSystem {
 // =============================================================================
 class RepoSystem {
   static allRepos = [];
+  static activeLanguages = new Set();
 
   static init(repos) {
     if (!repos?.length) {
@@ -278,6 +279,7 @@ class RepoSystem {
 
     this.allRepos = [...repos].sort(Utils.sorting.stars);
     this.setupSearch();
+    this.generateLanguageFilters();
     this.render();
   }
 
@@ -353,6 +355,7 @@ class RepoSystem {
   static setupSearch() {
     DOM.repoSearch.addEventListener('input', () => {
       const term = DOM.repoSearch.value.toLowerCase();
+      this.applyFilters();
       const filtered = this.allRepos.filter(repo => 
         repo.name.toLowerCase().includes(term) ||
         (repo.description?.toLowerCase().includes(term))
@@ -364,6 +367,103 @@ class RepoSystem {
   static sort(sortKey) {
     this.allRepos.sort(Utils.sorting[sortKey]);
     this.render();
+  }
+
+  // ====== Langue Filters Tab ======
+  static currentSortKey = 'stars';
+  
+  static generateLanguageFilters() {
+    const languages = new Set(
+      this.allRepos
+        .map(repo => repo.language)
+        .filter(Boolean)
+        .sort()
+    );
+    
+    const container = document.querySelector('.filters-container');
+    container.innerHTML = '';
+    
+    // Button "All"
+    const allButton = this.createFilterTag('All', true);
+    container.appendChild(allButton);
+
+    // Langue Buttons
+    languages.forEach(lang => {
+      container.appendChild(this.createFilterTag(lang));
+    });
+  }
+
+  static createFilterTag(language, isAll = false) {
+    const tag = document.createElement('div');
+    tag.className = `filter-tag ${isAll ? 'active' : ''}`;
+    tag.innerHTML = `
+      ${!isAll ? `<span class="language-dot" 
+       style="background: ${CONFIG.languageColors[language] || '#3a5ccc'}"></span>` : ''}
+      ${language}
+    `;
+    
+    tag.addEventListener('click', () => {
+      if (isAll) {
+        this.activeLanguages.clear();
+        document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+        tag.classList.add('active');
+      } else {
+        tag.classList.toggle('active');
+        if (tag.classList.contains('active')) {
+          this.activeLanguages.add(language);
+        } else {
+          this.activeLanguages.delete(language);
+        }
+        document.querySelector('.filter-tag:first-child').classList.remove('active');
+      }
+
+      if (this.activeLanguages.size === 0) {
+        document.querySelector('.filter-tag:first-child').classList.add('active');
+      }
+
+      this.applyFilters();
+    });
+
+    return tag;
+  }
+
+  static sort(sortKey) {
+    this.currentSortKey = sortKey;
+    this.applyFilters();
+  }
+
+  static applyFilters() {
+    let filtered = this.allRepos;
+    const allButton = document.querySelector('.filter-tag:first-child');
+
+    if (this.activeLanguages.size > 0) {
+      filtered = filtered.filter(repo => 
+        this.activeLanguages.has(repo.language)
+      );
+      allButton.classList.remove('active');
+    } else {
+      allButton.classList.add('active');
+    }
+
+    filtered.sort(Utils.sorting[this.currentSortKey]);
+    this.render(filtered);
+  }
+  
+  // Observer-Animation for Card
+  static setupScrollAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.setProperty('--index', entry.target.dataset.index);
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.repo-card').forEach((card, index) => {
+      card.dataset.index = index;
+      observer.observe(card);
+    });
   }
 }
 
@@ -411,6 +511,7 @@ class CustomSelect {
   }
 
   handleOptionClick(option) {
+    RepoSystem.currentSortKey = option.dataset.sort;
     this.currentSort.textContent = option.textContent;
     this.callback(option.dataset.sort);
     this.close();

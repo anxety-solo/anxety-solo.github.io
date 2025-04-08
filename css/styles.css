@@ -435,6 +435,43 @@ Main Content
   }
 }
 
+/* Langue Filter Tabs */
+.language-filters {
+  margin: 1.5rem 0;
+}
+
+.filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.filter-tag {
+  display: flex;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  background: var(--anx-c-bg-alt);
+  border: 2px solid var(--anx-c-divider);
+  border-radius: calc(var(--anx-border-radius) * 3);
+  box-shadow: var(--anx-shadow);
+  align-items: center;
+  user-select: none;
+  cursor: pointer;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+
+  &.active {
+    background: var(--anx-c-brand-2);
+    border-color: var(--anx-c-brand-2);
+  }
+}
+
+.filter-tag .language-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
 
 /* Repositories Grid */
 .repos-grid {
@@ -452,6 +489,9 @@ Main Content
   border-radius: var(--anx-border-radius);
   transition: transform 0.2s ease;
   overflow: hidden;
+  opacity: 0;
+  animation: opacityCard calc(var(--transition-speed) * 2) ease forwards;
+  animation-delay: calc(var(--index) * 0.1s);
 
   &:hover {
     transform: translateY(-2px);
@@ -480,6 +520,11 @@ Main Content
     transition: opacity var(--transition-speed) ease;
     z-index: 0;
   }
+}
+
+@keyframes opacityCard {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Card content */
