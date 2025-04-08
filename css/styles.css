@@ -144,7 +144,7 @@ Main Content
   border-radius: calc(var(--anx-border-radius) * 2);
   border: 2px solid var(--anx-c-divider);
   grid-template-columns: 1fr 2fr;
-  gap: 3rem;
+  gap: 2.5rem;
   overflow: hidden;
 }
 
@@ -170,8 +170,8 @@ Main Content
   aspect-ratio: 1;
   position: relative;
   min-width: 120px;
-  width: min(250px, 30vw);
   max-width: 100%;
+  width: min(250px, 30vw);
   margin: 0 auto;
   border: 3px solid var(--anx-c-brand-1);
   border-radius: 50%;
@@ -228,7 +228,7 @@ Main Content
 
 .stat-item {
   display: flex;
-  flex: 1;
+  flex: 1 1 auto;
   align-items: center;
   padding: 1rem;
   background: var(--anx-c-bg-alt);
@@ -236,10 +236,10 @@ Main Content
   gap: 0.5rem;
   cursor: pointer;
   text-decoration: none;
-  transition: all var(--transition-speed) ease;
+  transition: background var(--transition-speed) ease;
   
   &:hover {
-    background: rgba(168, 177, 255, 0.15);
+    background: color-mix(in srgb, var(--anx-c-brand-1), var(--anx-c-bg-alt) 75%);
   }
 }
 
