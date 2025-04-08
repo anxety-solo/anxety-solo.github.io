@@ -31,14 +31,20 @@ const CONFIG = {
 // DOM Elements
 // =============================================================================
 const DOM = {
+  // Navigation Panel
   navContainer: document.querySelector('.nav-container'),
   navBrand: document.querySelector('.nav-brand'),
   githubProfileLink: document.getElementById('githubProfileLink'),
+  
+  // Profile Section
   userAvatar: document.getElementById('userAvatar'),
   userLogin: document.getElementById('user-login'),
   userName: document.getElementById('userName'),
   userBio: document.getElementById('userBio'),
   userStats: document.getElementById('userStats'),
+  
+  // Repositories Section
+  reposSection: document.getElementById('repositories'),
   repoSearch: document.getElementById('repoSearch'),
   reposContainer: document.getElementById('reposContainer'),
   customSelect: document.querySelector('.custom-select')
@@ -94,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const [userData, reposData, starredResponse] = await Promise.all([
       ApiService.fetchWithCache(urls.user),
       ApiService.fetchWithCache(urls.repos),
-      fetch(urls.starred) // Отдельный запрос для получения заголовков
+      fetch(urls.starred)
     ]);
 
     // Starred Count
@@ -220,9 +226,27 @@ const ProfileSystem = {
     }
 
     DOM.userStats.innerHTML = this.generateStatsHTML([
-      { icon: 'people', value: user.followers, label: 'Followers' },
-      { icon: 'remove_red_eye', value: user.following, label: 'Following' },
-      { icon: 'storage', value: user.public_repos, label: 'Repos' },
+      { 
+        icon: 'people', 
+        value: user.followers, 
+        label: 'Followers',
+        href: `https://github.com/${user.login}?tab=followers`,
+        className: 'followers'
+      },
+      { 
+        icon: 'remove_red_eye', 
+        value: user.following, 
+        label: 'Following',
+        href: `https://github.com/${user.login}?tab=following`,
+        className: 'following'
+      },
+      { 
+        icon: 'storage', 
+        value: user.public_repos, 
+        label: 'Repos',
+        href: `https://github.com/${user.login}?tab=repositories`,
+        className: 'repos'
+      },
       { 
         icon: 'star', 
         value: starredCount,
@@ -261,8 +285,6 @@ const RepoSystem = {
   allRepos: [],
 
   init(repos) {
-    const reposSection = document.getElementById('repositories');
-
     if (!repos?.length) {
       this.displayMessage(reposSection, 'fa-folder-open', 'No public repositories found.');
       return;

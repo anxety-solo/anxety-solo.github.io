@@ -55,11 +55,6 @@ body {
 a {
   color: inherit;
   text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-a:hover {
-  color: var(--anx-c-brand-2);
 }
 
 
@@ -233,15 +228,15 @@ Navigation
   border-radius: var(--anx-border-radius);
   gap: 0.5rem;
 }
-/* Starred Count */
-.stat-item.starred {
+
+/* Stats Hover Effects */
+.stat-item {
   transition: all var(--transition-speed) ease;
   cursor: pointer;
-  position: relative;
+  text-decoration: none;
 
   &:hover {
-    background: rgba(255, 240, 181, 0.15);
-    color: #ffeeb5;
+    background: rgba(168, 177, 255, 0.15);
   }
 }
 
