@@ -141,8 +141,9 @@ Main Content
   margin-bottom: 4.5rem;
   padding: 2rem;
   background: var(--anx-c-bg-soft);
-  border-radius: calc(var(--anx-border-radius) * 2);
   border: 2px solid var(--anx-c-divider);
+  border-radius: calc(var(--anx-border-radius) * 2);
+  box-shadow: var(--anx-shadow);
   grid-template-columns: 1fr 2fr;
   gap: 2.5rem;
   overflow: hidden;
@@ -277,13 +278,13 @@ Main Content
   display: flex;
   max-width: calc(var(--container-width) - 300px);
   margin: 0.75rem auto 0;
-  padding: 0.5rem;
+  padding: 1rem;
   background: linear-gradient(var(--anx-c-bg-elv), transparent);
   border-radius: calc(var(--anx-border-radius) + 4px);
+  box-shadow: var(--anx-shadow);
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  touch-action: manipulation;
 }
 
 .search-container {
@@ -464,6 +465,10 @@ Main Content
     background: var(--anx-c-brand-2);
     border-color: var(--anx-c-brand-2);
   }
+  
+  &:hover:not(.active) {
+    background: var(--anx-c-bg-soft);
+  }
 }
 
 .filter-tag .language-dot {
@@ -490,7 +495,7 @@ Main Content
   transition: transform 0.2s ease;
   overflow: hidden;
   opacity: 0;
-  animation: opacityCard calc(var(--transition-speed) * 2) ease forwards;
+  animation: opacityCard var(--transition-speed) ease forwards;
   animation-delay: calc(var(--index) * 0.1s);
 
   &:hover {
@@ -541,30 +546,31 @@ Main Content
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
 
-  .repo-name {
-    position: relative;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--anx-c-brand-1);
-    text-decoration: none;
+.repo-name {
+  position: relative;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--anx-c-brand-1);
+  text-decoration: none;
 
-    &::after {
-      content: '';
-      position: absolute;
-      width: 0;
-      height: 2px;
-      left: 0;
-      bottom: -2px;
-      background: currentColor;
-      transition: width 0.3s ease;
-    }
+  &::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    left: 0;
+    bottom: -2px;
+    background: currentColor;
+    transition: width 0.3s ease;
+  }
 
-    &:hover::after {
-      width: 100%;
-    }
+  &:hover::after {
+    width: 100%;
   }
 }
+
 
 .repo-description {
   font-size: 0.95rem;

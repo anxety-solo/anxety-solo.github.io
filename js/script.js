@@ -224,7 +224,7 @@ class ProfileSystem {
   }
 
   static updateProfileInfo(user, starredCount) {
-    DOM.navBrand.textContent = user.name || user.login;
+    DOM.navBrand.textContent = user.name || CONFIG.githubUsername;
     DOM.githubProfileLink.href = user.html_url;
     DOM.userAvatar.src = user.avatar_url;
     DOM.userName.textContent = user.name || user.login;
@@ -239,7 +239,7 @@ class ProfileSystem {
     DOM.userStats.innerHTML = this.generateStatsHTML([
       { icon: 'people', value: user.followers, label: 'Followers', href: `?tab=followers` },
       { icon: 'remove_red_eye', value: user.following, label: 'Following', href: `?tab=following` },
-      { icon: 'storage', value: user.public_repos, label: 'Repos', href: `?tab=repositories` },
+      { icon: 'storage', value: user.public_repos, label: 'Repositories', href: `?tab=repositories` },
       { icon: 'star', value: starredCount, label: 'Starred', href: `?tab=stars` }
     ], user.login);
   }
@@ -353,20 +353,26 @@ class RepoSystem {
 
   // Repo-Controls
   static setupSearch() {
+    let timeoutId;
+    
     DOM.repoSearch.addEventListener('input', () => {
-      const term = DOM.repoSearch.value.toLowerCase();
-      this.applyFilters();
-      const filtered = this.allRepos.filter(repo => 
-        repo.name.toLowerCase().includes(term) ||
-        (repo.description?.toLowerCase().includes(term))
-      );
-      this.render(filtered);
+      clearTimeout(timeoutId);
+      
+      timeoutId = setTimeout(() => {
+        const term = DOM.repoSearch.value.toLowerCase();
+        const filtered = this.allRepos.filter(repo => 
+          repo.name.toLowerCase().includes(term) || 
+          (repo.description?.toLowerCase().includes(term)) || 
+          (repo.topics?.some(topic => topic.toLowerCase().includes(term)))
+        );
+        this.render(filtered, false);
+      }, 450);
     });
   }
 
   static sort(sortKey) {
-    this.allRepos.sort(Utils.sorting[sortKey]);
-    this.render();
+    this.currentSortKey = sortKey;
+    this.applyFilters();
   }
 
   // ====== Langue Filters Tab ======
@@ -427,26 +433,17 @@ class RepoSystem {
     return tag;
   }
 
-  static sort(sortKey) {
-    this.currentSortKey = sortKey;
-    this.applyFilters();
-  }
-
   static applyFilters() {
     let filtered = this.allRepos;
-    const allButton = document.querySelector('.filter-tag:first-child');
 
     if (this.activeLanguages.size > 0) {
       filtered = filtered.filter(repo => 
         this.activeLanguages.has(repo.language)
       );
-      allButton.classList.remove('active');
-    } else {
-      allButton.classList.add('active');
     }
 
     filtered.sort(Utils.sorting[this.currentSortKey]);
-    this.render(filtered);
+    this.render(filtered, true);
   }
   
   // Observer-Animation for Card
