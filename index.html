@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link id="dynamic-favicon" rel="icon" type="image/png">
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+
+
     <!-- Material Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css">
@@ -57,12 +60,12 @@
           <div class="stats-container" id="userStats"></div>
         </div>
       </section>
-      
+
       <!-- Repositories Section -->
       <section id="repositories" class="repositories-section">
         <div class="section-header">
           <h2 class="section-title">Public Repositories</h2>
-          
+
           <div class="repo-controls">    
             <div class="search-container">
               <input type="text" id="repoSearch" placeholder="Search repositories...">
@@ -83,7 +86,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="language-filters">
           <div class="filters-container"></div>
         </div>
@@ -92,6 +95,7 @@
         <div class="repos-grid" id="reposContainer">
           <!-- Filled card by JS -->
         </div>
+        <div class="pagination-container"></div>
       </section>
     </main>
 

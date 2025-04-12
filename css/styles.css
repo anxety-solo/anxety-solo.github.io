@@ -652,6 +652,48 @@ Main Content
 }
 
 
+/* Pagination */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem 0;
+  padding: 1rem;
+}
+
+.pagination-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: var(--anx-c-bg-alt);
+  border: 2px solid var(--anx-c-divider);
+  border-radius: var(--anx-border-radius);
+  color: var(--anx-c-text-2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background: var(--anx-c-brand-2);
+  border-color: var(--anx-c-brand-2);
+  color: var(--anx-c-text-1);
+}
+
+.pagination-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.page-info {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  color: var(--anx-c-text-2);
+}
+
+
 /* No Repositories Message */
 .no-repos-message {
   text-align: center;

@@ -3,9 +3,8 @@
 // =============================================================================
 const CONFIG = {
   githubUsername: 'anxety-solo',
-  cacheTTL: 900000,   // 15 min chache
+  cacheTTL: 900000,
   apiBase: 'https://api.github.com/users',
-  starredPerPage: 50, // For Starred Page
   languageColors: {
     JavaScript: '#f1e05a',
     Python: '#3572a5',
@@ -32,25 +31,18 @@ const CONFIG = {
 // DOM Elements
 // =============================================================================
 const DOM = {
-  // Navigation Panel
   navContainer: document.querySelector('.nav-container'),
   navBrand: document.querySelector('.nav-brand'),
   githubProfileLink: document.getElementById('githubProfileLink'),
-
-  // Profile Section
   userAvatar: document.getElementById('userAvatar'),
   userLogin: document.getElementById('user-login'),
   userName: document.getElementById('userName'),
   userBio: document.getElementById('userBio'),
   userStats: document.getElementById('userStats'),
-
-  // Repositories Section
   reposSection: document.getElementById('repositories'),
   reposContainer: document.getElementById('reposContainer'),
   repoSearch: document.getElementById('repoSearch'),
   customSelect: document.querySelector('.custom-select'),
-  
-  // Loading
   loadingSpinner: document.querySelector('.loading-spinner')
 };
 
@@ -87,60 +79,6 @@ const Utils = {
 
 
 // =============================================================================
-// Application Initialization
-// =============================================================================
-document.addEventListener('DOMContentLoaded', async () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const userParam = urlParams.get('user') || urlParams.get('u') || CONFIG.githubUsername;
-
-  try {
-    const [userData, reposData, starredResponse] = await Promise.all([
-      GitHubService.fetchUserData(userParam),
-      GitHubService.fetchRepos(userParam),
-      GitHubService.fetchStarred(userParam)
-    ]);
-
-    const starredCount = await getTotalStarredCount(starredResponse);
-
-    ProfileSystem.init(userData, starredCount);
-    RepoSystem.init(reposData);
-    new CustomSelect(DOM.customSelect, sortKey => RepoSystem.sort(sortKey));
-
-    if (userParam !== CONFIG.githubUsername) showUserPopup(userData.login);
-
-    DOM.loadingSpinner.style.opacity = '0';
-    setTimeout(() => DOM.loadingSpinner.remove(), 300);
-  } catch (error) {
-    ErrorHandler.handle(error, DOM.loadingSpinner);
-  }
-});
-
-async function getTotalStarredCount(response) {
-  try {
-    const linkHeader = response.headers.get('Link');
-    const data = await response.json();
-
-    if (!linkHeader) return data.length;
-
-    const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
-    return lastPageMatch 
-      ? (parseInt(lastPageMatch[1]) - 1) * CONFIG.starredPerPage + data.length
-      : data.length;
-  } catch (error) {
-    console.error('Error fetching starred count:', error);
-    return 'N/A';
-  }
-}
-
-function showUserPopup(username) {
-  const popup = document.getElementById('user-popup');
-  popup.querySelector('.popup-username').textContent = `@${username}`;
-  popup.classList.add('show');
-  setTimeout(() => popup.classList.remove('show'), 5000);
-}
-
-
-// =============================================================================
 // GitHub API Service
 // =============================================================================
 class GitHubService {
@@ -149,11 +87,44 @@ class GitHubService {
   }
 
   static async fetchRepos(username) {
-    return this.fetchWithCache(`${CONFIG.apiBase}/${username}/repos`);
+    let repos = [];
+    let page = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      const url = `${CONFIG.apiBase}/${username}/repos?page=${page}&per_page=100`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP error! ${response.status}`);
+      const data = await response.json();
+      repos = repos.concat(data);
+      const linkHeader = response.headers.get('Link');
+      hasMore = linkHeader?.includes('rel="next"');
+      page++;
+    }
+
+    return repos;
   }
 
   static async fetchStarred(username) {
     return fetch(`${CONFIG.apiBase}/${username}/starred`);
+  }
+
+  // Helper Func
+  static async getTotalStarredCount(response) {
+    try {
+      const linkHeader = response.headers.get('Link');
+      const data = await response.json();
+
+      if (!linkHeader) return data.length;
+      const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
+      
+      return lastPageMatch 
+        ? (parseInt(lastPageMatch[1]) - 1) * 50 + data.length
+        : data.length;
+    } catch (error) {
+      console.error('Error fetching starred count:', error);
+      return 'N/A';
+    }
   }
 
   static async fetchWithCache(url) {
@@ -161,7 +132,6 @@ class GitHubService {
     const cached = Utils.cache.get(cacheKey);
 
     if (cached && Utils.cache.isValid(cached, CONFIG.cacheTTL)) {
-      console.log('Using cached data for:', url); // Logging Chache
       return cached.data;
     }
 
@@ -170,7 +140,6 @@ class GitHubService {
     const data = await response.json();
 
     Utils.cache.set(cacheKey, data);
-    console.log('Fresh data fetched for:', url);
     return data;
   }
 }
@@ -184,6 +153,13 @@ class ProfileSystem {
     this.updateDocumentMeta(user);
     this.updateProfileInfo(user, starredCount);
     this.setupNavigation(DOM.navBrand);
+  }
+
+  static showUserPopup(username) {
+    const popup = document.getElementById('user-popup');
+    popup.querySelector('.popup-username').textContent = `@${username}`;
+    popup.classList.add('show');
+    setTimeout(() => popup.classList.remove('show'), 5000);
   }
 
   static updateDocumentMeta(user) {
@@ -210,12 +186,12 @@ class ProfileSystem {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = canvas.height = 32;
-        
+
         ctx.beginPath();
         ctx.arc(16, 16, 16, 0, Math.PI * 2);
         ctx.clip();
         ctx.drawImage(img, 0, 0, 32, 32);
-        
+
         resolve(canvas);
       };
 
@@ -224,7 +200,7 @@ class ProfileSystem {
   }
 
   static updateProfileInfo(user, starredCount) {
-    DOM.navBrand.textContent = user.name || CONFIG.githubUsername;
+    DOM.navBrand.textContent = user.name || user.login;
     DOM.githubProfileLink.href = user.html_url;
     DOM.userAvatar.src = user.avatar_url;
     DOM.userName.textContent = user.name || user.login;
@@ -270,6 +246,10 @@ class ProfileSystem {
 class RepoSystem {
   static allRepos = [];
   static activeLanguages = new Set();
+  static reposPerPage = 30;
+  static currentPage = 1;
+  static currentFilteredRepos = [];
+  static currentSortKey = 'stars';
 
   static init(repos) {
     if (!repos?.length) {
@@ -278,17 +258,25 @@ class RepoSystem {
     }
 
     this.allRepos = [...repos].sort(Utils.sorting.stars);
+    this.currentFilteredRepos = this.allRepos;
     this.setupSearch();
     this.generateLanguageFilters();
+    this.currentPage = 1;
     this.render();
   }
 
-  static render(repos = this.allRepos) {
-    DOM.reposContainer.innerHTML = repos.length 
-      ? repos.map(repo => this.createRepoCard(repo)).join('')
+  static render() {
+    const startIdx = (this.currentPage - 1) * this.reposPerPage;
+    const endIdx = startIdx + this.reposPerPage;
+    const reposToShow = this.currentFilteredRepos.slice(startIdx, endIdx);
+
+    DOM.reposContainer.innerHTML = reposToShow.length 
+      ? reposToShow.map(repo => this.createRepoCard(repo)).join('')
       : this.displayMessage('fa-search-minus', 'No repositories found matching your search.');
+
+    this.renderPagination();
   }
-  
+
   static displayMessage(icon, text) {
     return `
       <div class="no-repos-message">
@@ -298,7 +286,6 @@ class RepoSystem {
     `;
   }
 
-  // Repo-Card
   static createRepoCard(repo) {
     return `
       <div class="repo-card ${repo.fork ? 'forked' : ''}">
@@ -351,23 +338,19 @@ class RepoSystem {
     `;
   }
 
-  // Repo-Controls
+  // Repos Control
   static setupSearch() {
-    let timeoutId;
-    
-    DOM.repoSearch.addEventListener('input', () => {
-      clearTimeout(timeoutId);
-      
-      timeoutId = setTimeout(() => {
-        const term = DOM.repoSearch.value.toLowerCase();
-        const filtered = this.allRepos.filter(repo => 
-          repo.name.toLowerCase().includes(term) || 
-          (repo.description?.toLowerCase().includes(term)) || 
-          (repo.topics?.some(topic => topic.toLowerCase().includes(term)))
-        );
-        this.render(filtered, false);
-      }, 450);
-    });
+    DOM.repoSearch.addEventListener('input', _.debounce(() => {
+      const term = DOM.repoSearch.value.toLowerCase();
+      const filtered = this.allRepos.filter(repo => 
+        repo.name.toLowerCase().includes(term) || 
+        (repo.description?.toLowerCase().includes(term)) || 
+        (repo.topics?.some(topic => topic.toLowerCase().includes(term)))
+      );
+      this.currentFilteredRepos = filtered;
+      this.currentPage = 1;
+      this.render();
+    }, 450));
   }
 
   static sort(sortKey) {
@@ -375,9 +358,6 @@ class RepoSystem {
     this.applyFilters();
   }
 
-  // ====== Langue Filters Tab ======
-  static currentSortKey = 'stars';
-  
   static generateLanguageFilters() {
     const languages = new Set(
       this.allRepos
@@ -385,15 +365,13 @@ class RepoSystem {
         .filter(Boolean)
         .sort()
     );
-    
+
     const container = document.querySelector('.filters-container');
     container.innerHTML = '';
-    
-    // Button "All"
+
     const allButton = this.createFilterTag('All', true);
     container.appendChild(allButton);
 
-    // Langue Buttons
     languages.forEach(lang => {
       container.appendChild(this.createFilterTag(lang));
     });
@@ -407,7 +385,7 @@ class RepoSystem {
        style="background: ${CONFIG.languageColors[language] || '#3a5ccc'}"></span>` : ''}
       ${language}
     `;
-    
+
     tag.addEventListener('click', () => {
       if (isAll) {
         this.activeLanguages.clear();
@@ -415,11 +393,10 @@ class RepoSystem {
         tag.classList.add('active');
       } else {
         tag.classList.toggle('active');
-        if (tag.classList.contains('active')) {
-          this.activeLanguages.add(language);
-        } else {
-          this.activeLanguages.delete(language);
-        }
+        tag.classList.contains('active') 
+          ? this.activeLanguages.add(language)
+          : this.activeLanguages.delete(language);
+        
         document.querySelector('.filter-tag:first-child').classList.remove('active');
       }
 
@@ -443,24 +420,44 @@ class RepoSystem {
     }
 
     filtered.sort(Utils.sorting[this.currentSortKey]);
-    this.render(filtered, true);
+    this.currentFilteredRepos = filtered;
+    this.currentPage = 1;
+    this.render();
   }
-  
-  // Observer-Animation for Card
-  static setupScrollAnimations() {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.setProperty('--index', entry.target.dataset.index);
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.1 });
 
-    document.querySelectorAll('.repo-card').forEach((card, index) => {
-      card.dataset.index = index;
-      observer.observe(card);
-    });
+  static renderPagination() {
+    const totalPages = Math.ceil(this.currentFilteredRepos.length / this.reposPerPage);
+    const container = document.querySelector('.pagination-container');
+    
+    container.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const prevButton = this.createPaginationButton(
+      '<i class="fas fa-chevron-left"></i> Previous',
+      this.currentPage === 1,
+      () => { this.currentPage--; this.render(); }
+    );
+
+    const pageInfo = document.createElement('span');
+    pageInfo.className = 'page-info';
+    pageInfo.textContent = `Page ${this.currentPage} of ${totalPages}`;
+
+    const nextButton = this.createPaginationButton(
+      'Next <i class="fas fa-chevron-right"></i>',
+      this.currentPage === totalPages,
+      () => { this.currentPage++; this.render(); }
+    );
+
+    container.append(prevButton, pageInfo, nextButton);
+  }
+
+  static createPaginationButton(html, disabled, onClick) {
+    const button = document.createElement('button');
+    button.className = 'pagination-button';
+    button.innerHTML = html;
+    button.disabled = disabled;
+    button.addEventListener('click', onClick);
+    return button;
   }
 }
 
@@ -556,6 +553,36 @@ const ErrorHandler = {
     return titles[Math.floor(Math.random() * titles.length)];
   }
 };
+
+
+// =============================================================================
+// Application Initialization
+// =============================================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const userParam = urlParams.get('user') || urlParams.get('u') || CONFIG.githubUsername;
+
+  try {
+    const [userData, reposData, starredResponse] = await Promise.all([
+      GitHubService.fetchUserData(userParam),
+      GitHubService.fetchRepos(userParam),
+      GitHubService.fetchStarred(userParam)
+    ]);
+
+    const starredCount = await GitHubService.getTotalStarredCount(starredResponse);
+
+    ProfileSystem.init(userData, starredCount);
+    RepoSystem.init(reposData);
+    new CustomSelect(DOM.customSelect, sortKey => RepoSystem.sort(sortKey));
+
+    if (userParam !== CONFIG.githubUsername) ProfileSystem.showUserPopup(userData.login);
+
+    DOM.loadingSpinner.style.opacity = '0';
+    setTimeout(() => DOM.loadingSpinner.remove(), 300);
+  } catch (error) {
+    ErrorHandler.handle(error, DOM.loadingSpinner);
+  }
+});
 
 
 // =============================================================================
