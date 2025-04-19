@@ -31,18 +31,25 @@ const CONFIG = {
 // DOM Elements
 // =============================================================================
 const DOM = {
+  // Navigation Panel
   navContainer: document.querySelector('.nav-container'),
   navBrand: document.querySelector('.nav-brand'),
   githubProfileLink: document.getElementById('githubProfileLink'),
+  
+  // Profile Section
   userAvatar: document.getElementById('userAvatar'),
   userLogin: document.getElementById('user-login'),
   userName: document.getElementById('userName'),
   userBio: document.getElementById('userBio'),
   userStats: document.getElementById('userStats'),
+  
+  // Repositories Section
   reposSection: document.getElementById('repositories'),
   reposContainer: document.getElementById('reposContainer'),
   repoSearch: document.getElementById('repoSearch'),
   customSelect: document.querySelector('.custom-select'),
+  
+  // Other
   loadingSpinner: document.querySelector('.loading-spinner')
 };
 
@@ -246,7 +253,7 @@ class ProfileSystem {
 class RepoSystem {
   static allRepos = [];
   static activeLanguages = new Set();
-  static reposPerPage = 30;
+  static reposPerPage = 24;
   static currentPage = 1;
   static currentFilteredRepos = [];
   static currentSortKey = 'stars';
@@ -261,7 +268,7 @@ class RepoSystem {
     this.currentFilteredRepos = this.allRepos;
     this.setupSearch();
     this.generateLanguageFilters();
-    this.currentPage = 1;
+    // this.currentPage = 1;
     this.render();
   }
 
