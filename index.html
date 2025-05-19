@@ -5,34 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link id="dynamic-favicon" rel="icon" type="image/png">
 
+    <!-- External Resources -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"></script>
 
-    <!-- Material Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css">
-
-    <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=M+PLUS+Rounded+1c&family=Press+Start+2P&display=swap">
 
     <title>GitHub Profile</title>
-
-    <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
   </head>
   <body>
-    <!-- Background | WIP -->
+    <!-- Background -->
+    <div class="grid-background"></div>
 
-    <!-- Loading-Spinner -->
+    <!-- Loading Spinner -->
     <div class="loading-spinner">
       <img src="assets/sexy_gura.webp" class="loading-image">
       <div class="spinner"></div>
       <p class="loading-text">Loading...</p>
     </div>
 
-    <!-- Navigation Panel -->
+    <!-- Navigation -->
     <nav class="nav-container">
       <a href="#" class="nav-brand disabled"></a>
-      <div class="nav-links">
+
+      <div class="nav-menu-toggle">
+        <div class="menu-bars">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </div>
+
+      <div class="nav-menu">
         <a id="githubProfileLink" class="nav-link" target="_blank">
           <i class="fab fa-github"></i>
         </a>
@@ -42,7 +49,7 @@
       </div>
     </nav>
 
-    <!-- Main -->
+    <!-- Main Content -->
     <main class="main-container">
       <!-- Profile Section -->
       <section class="profile-section">
@@ -90,20 +97,17 @@
           <div class="filters-container"></div>
         </div>
 
-        <!-- Repositories Grid -->
-        <div class="repos-grid" id="reposContainer">
-          <!-- Filled card by JS -->
-        </div>
+        <div class="repos-grid" id="reposContainer"></div>
         <div class="pagination-container"></div>
       </section>
     </main>
 
-    <!-- Another User-PopUp Data-Fetch -->
+    <!-- User Popup -->
     <div id="user-popup" class="user-popup">
       Showing profile data for <span class="popup-username"></span>
     </div>
 
-    <!-- Error-Load Data -->
+    <!-- Error Template -->
     <template id="error-template">
       <div class="error-message">
         <i class="fas fa-exclamation-triangle error-icon"></i>

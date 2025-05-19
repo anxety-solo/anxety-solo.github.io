@@ -26,7 +26,6 @@ const CONFIG = {
   }
 };
 
-
 // =============================================================================
 // DOM Elements
 // =============================================================================
@@ -35,6 +34,8 @@ const DOM = {
   navContainer: document.querySelector('.nav-container'),
   navBrand: document.querySelector('.nav-brand'),
   githubProfileLink: document.getElementById('githubProfileLink'),
+  
+  mainContainer: document.querySelector('.main-container'),
   
   // Profile Section
   userAvatar: document.getElementById('userAvatar'),
@@ -53,18 +54,22 @@ const DOM = {
   loadingSpinner: document.querySelector('.loading-spinner')
 };
 
-
 // =============================================================================
 // Utilities
 // =============================================================================
 const Utils = {
   cache: {
-    get: (key) => JSON.parse(localStorage.getItem(key)),
-    set: (key, data) => localStorage.setItem(
-      key,
-      JSON.stringify({ data, timestamp: Date.now() })
-    ),
-    isValid: (cached, ttl) => Date.now() - cached.timestamp < ttl
+    get: (key) => {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
+    },
+    set: (key, data) => {
+      localStorage.setItem(key, JSON.stringify({
+        data,
+        timestamp: Date.now()
+      }));
+    },
+    isValid: (cached) => cached && (Date.now() - cached.timestamp < CONFIG.cacheTTL)
   },
 
   dom: {
@@ -83,7 +88,6 @@ const Utils = {
     forks: (a, b) => b.forks_count - a.forks_count
   }
 };
-
 
 // =============================================================================
 // GitHub API Service
@@ -104,8 +108,7 @@ class GitHubService {
       if (!response.ok) throw new Error(`HTTP error! ${response.status}`);
       const data = await response.json();
       repos = repos.concat(data);
-      const linkHeader = response.headers.get('Link');
-      hasMore = linkHeader?.includes('rel="next"');
+      hasMore = response.headers.get('Link')?.includes('rel="next"');
       page++;
     }
 
@@ -116,18 +119,14 @@ class GitHubService {
     return fetch(`${CONFIG.apiBase}/${username}/starred`);
   }
 
-  // Helper Func
   static async getTotalStarredCount(response) {
     try {
       const linkHeader = response.headers.get('Link');
       const data = await response.json();
-
       if (!linkHeader) return data.length;
+
       const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
-      
-      return lastPageMatch 
-        ? (parseInt(lastPageMatch[1]) - 1) * 50 + data.length
-        : data.length;
+      return lastPageMatch ? (parseInt(lastPageMatch[1]) - 1) * 50 + data.length : data.length;
     } catch (error) {
       console.error('Error fetching starred count:', error);
       return 'N/A';
@@ -145,12 +144,10 @@ class GitHubService {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP error! ${response.status}`);
     const data = await response.json();
-
     Utils.cache.set(cacheKey, data);
     return data;
   }
 }
-
 
 // =============================================================================
 // Profile System
@@ -159,7 +156,35 @@ class ProfileSystem {
   static init(user, starredCount) {
     this.updateDocumentMeta(user);
     this.updateProfileInfo(user, starredCount);
-    this.setupNavigation(DOM.navBrand);
+    this.setupNavigation();
+  }
+
+  static async applyMaterialYou(avatarUrl) {
+    try {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.src = `${avatarUrl}?${Date.now()}`;
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+
+      const vibrant = new Vibrant(img);
+      const palette = await vibrant.getPalette();
+      const colors = [palette.Vibrant, palette.Muted, palette.DarkVibrant];
+      const validColor = colors.find(c => c && 
+                                     !/^(#fff|#000|ffffff|000000)/i.test(c.hex));
+
+      if (validColor) {
+        document.documentElement.style.setProperty(
+          '--anx-c-brand-1', 
+          validColor.hex
+        );
+      }
+    } catch (error) {
+      console.error('Material You error:', error);
+    }
   }
 
   static showUserPopup(username) {
@@ -198,7 +223,6 @@ class ProfileSystem {
         ctx.arc(16, 16, 16, 0, Math.PI * 2);
         ctx.clip();
         ctx.drawImage(img, 0, 0, 32, 32);
-
         resolve(canvas);
       };
 
@@ -229,23 +253,20 @@ class ProfileSystem {
 
   static generateStatsHTML(stats, username) {
     return stats.map(({ icon, value, label, href }) => `
-      <a href="https://github.com/${username}${href}" 
-         class="stat-item ${label.toLowerCase()}" 
-         target="_blank">
+      <a href="https://github.com/${username}${href}" class="stat-item ${label.toLowerCase()}" target="_blank">
         <span class="material-icons">${icon}</span>
         <span>${value} ${label}</span>
       </a>
     `).join('');
   }
 
-  static setupNavigation(navBrand) {
-    navBrand.addEventListener('click', (e) => {
+  static setupNavigation() {
+    DOM.navBrand.addEventListener('click', (e) => {
       e.preventDefault();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 }
-
 
 // =============================================================================
 // Repository System
@@ -263,12 +284,23 @@ class RepoSystem {
       DOM.reposSection.innerHTML = this.displayMessage('fa-folder-open', 'No public repositories found.');
       return;
     }
-
+    
+    this.updateReposPerPage();
     this.allRepos = [...repos].sort(Utils.sorting.stars);
     this.currentFilteredRepos = this.allRepos;
     this.setupSearch();
     this.generateLanguageFilters();
-    // this.currentPage = 1;
+    this.render();
+  }
+
+  // Repos on Mobile - 8
+  static updateReposPerPage() {
+    this.reposPerPage = window.matchMedia('(max-width: 768px)').matches ? 8 : 24;
+  }
+
+  static handleResize() {
+    this.updateReposPerPage();
+    this.currentPage = 1;
     this.render();
   }
 
@@ -279,7 +311,7 @@ class RepoSystem {
 
     DOM.reposContainer.innerHTML = reposToShow.length 
       ? reposToShow.map(repo => this.createRepoCard(repo)).join('')
-      : this.displayMessage('fa-search-minus', 'No repositories found matching your search.');
+    : this.displayMessage('fa-search-minus', 'No repositories found matching your search.');
 
     this.renderPagination();
   }
@@ -325,13 +357,16 @@ class RepoSystem {
   }
 
   static createRepoMeta(repo) {
+    // Check if language is null or undefined
+    const language = repo.language || (repo.fork && repo.parent?.language) || 'Unknown';
+
     return `
       <div class="repo-meta">
         <span class="meta-item">
           <span class="language-dot" 
-                style="background: ${CONFIG.languageColors[repo.language] || '#3a5ccc'}">
+                style="background: ${CONFIG.languageColors[language] || '#3a5ccc'}">
           </span>
-          ${repo.language || 'Unknown'}
+          ${language}
         </span>
         <span class="meta-item">
           <span class="material-icons">call_split</span>
@@ -345,16 +380,14 @@ class RepoSystem {
     `;
   }
 
-  // Repos Control
   static setupSearch() {
     DOM.repoSearch.addEventListener('input', _.debounce(() => {
       const term = DOM.repoSearch.value.toLowerCase();
-      const filtered = this.allRepos.filter(repo => 
-        repo.name.toLowerCase().includes(term) || 
-        (repo.description?.toLowerCase().includes(term)) || 
-        (repo.topics?.some(topic => topic.toLowerCase().includes(term)))
-      );
-      this.currentFilteredRepos = filtered;
+      this.currentFilteredRepos = this.allRepos.filter(repo => 
+                                                       repo.name.toLowerCase().includes(term) || 
+                                                       (repo.description?.toLowerCase().includes(term)) || 
+                                                       (repo.topics?.some(topic => topic.toLowerCase().includes(term)))
+                                                      );
       this.currentPage = 1;
       this.render();
     }, 450));
@@ -368,9 +401,9 @@ class RepoSystem {
   static generateLanguageFilters() {
     const languages = new Set(
       this.allRepos
-        .map(repo => repo.language)
-        .filter(Boolean)
-        .sort()
+      .map(repo => repo.language)
+      .filter(Boolean)
+      .sort()
     );
 
     const container = document.querySelector('.filters-container');
@@ -402,8 +435,8 @@ class RepoSystem {
         tag.classList.toggle('active');
         tag.classList.contains('active') 
           ? this.activeLanguages.add(language)
-          : this.activeLanguages.delete(language);
-        
+        : this.activeLanguages.delete(language);
+
         document.querySelector('.filter-tag:first-child').classList.remove('active');
       }
 
@@ -418,13 +451,9 @@ class RepoSystem {
   }
 
   static applyFilters() {
-    let filtered = this.allRepos;
-
-    if (this.activeLanguages.size > 0) {
-      filtered = filtered.filter(repo => 
-        this.activeLanguages.has(repo.language)
-      );
-    }
+    let filtered = this.activeLanguages.size > 0
+    ? this.allRepos.filter(repo => this.activeLanguages.has(repo.language))
+    : this.allRepos;
 
     filtered.sort(Utils.sorting[this.currentSortKey]);
     this.currentFilteredRepos = filtered;
@@ -435,7 +464,7 @@ class RepoSystem {
   static renderPagination() {
     const totalPages = Math.ceil(this.currentFilteredRepos.length / this.reposPerPage);
     const container = document.querySelector('.pagination-container');
-    
+
     container.innerHTML = '';
     if (totalPages <= 1) return;
 
@@ -468,7 +497,6 @@ class RepoSystem {
   }
 }
 
-
 // =============================================================================
 // Custom Select Component
 // =============================================================================
@@ -482,25 +510,28 @@ class CustomSelect {
     this.overlay = this.createOverlay();
     this.isOpen = false;
 
-    this.initialize();
+    this.init();
   }
 
   createOverlay() {
     return Utils.dom.createElement('div', 'dropdown-overlay');
   }
 
-  initialize() {
+  init() {
     this.header.addEventListener('click', (e) => this.toggle(e));
     this.options.forEach(opt => 
-      opt.addEventListener('click', () => this.handleOptionClick(opt))
-    );
+                         opt.addEventListener('click', () => this.handleOptionClick(opt))
+                        );
+    document.addEventListener('click', (e) => {
+      if (!this.container.contains(e.target)) this.close();
+    });
     document.body.appendChild(this.overlay);
-    this.overlay.addEventListener('click', () => this.close());
+    this.overlay.addEventListener('click', () => this.close())
   }
 
   toggle(e) {
     e.stopPropagation();
-    this.container.classList.toggle('active', !this.isOpen);
+    this.container.classList.toggle('active');
     this.overlay.classList.toggle('active', !this.isOpen);
     this.isOpen = !this.isOpen;
   }
@@ -512,19 +543,17 @@ class CustomSelect {
   }
 
   handleOptionClick(option) {
-    RepoSystem.currentSortKey = option.dataset.sort;
     this.currentSort.textContent = option.textContent;
     this.callback(option.dataset.sort);
     this.close();
   }
 }
 
-
 // =============================================================================
 // Error Handling
 // =============================================================================
 const ErrorHandler = {
-  handle(error, loadingSpinner) {
+  handle(error) {
     console.error('Data loading error:', error);
 
     const template = document.getElementById('error-template');
@@ -538,10 +567,12 @@ const ErrorHandler = {
     description.textContent = this.getErrorMessage(error);
     button.onclick = () => window.location.reload();
 
-    loadingSpinner.innerHTML = '';
-    loadingSpinner.appendChild(clone);
-    loadingSpinner.classList.add('error');
-    loadingSpinner.style.opacity = '1';
+    DOM.loadingSpinner.innerHTML = '';
+    DOM.loadingSpinner.appendChild(clone);
+    DOM.loadingSpinner.classList.add('error');
+
+    // Hide main container when error occurs
+    document.querySelector('.main-container').style.display = 'none';
   },
 
   getErrorMessage(error) {
@@ -555,7 +586,8 @@ const ErrorHandler = {
       'Oops! Something Went Wrong',
       'Connection Failed',
       'Data Loading Error',
-      'Technical Difficulties'
+      'Technical Difficulties',
+      'Awaa~... >_<\''
     ];
     return titles[Math.floor(Math.random() * titles.length)];
   }
@@ -575,28 +607,50 @@ document.addEventListener('DOMContentLoaded', async () => {
       GitHubService.fetchRepos(userParam),
       GitHubService.fetchStarred(userParam)
     ]);
-
     const starredCount = await GitHubService.getTotalStarredCount(starredResponse);
 
     ProfileSystem.init(userData, starredCount);
     RepoSystem.init(reposData);
     new CustomSelect(DOM.customSelect, sortKey => RepoSystem.sort(sortKey));
 
-    if (userParam !== CONFIG.githubUsername) ProfileSystem.showUserPopup(userData.login);
+    if (userParam !== CONFIG.githubUsername) {
+      ProfileSystem.showUserPopup(userData.login);
+      ProfileSystem.applyMaterialYou(userData.avatar_url); // MaterialYou Theme for Avatar
+    }
 
+    // Remove LoadingSpinner
     DOM.loadingSpinner.style.opacity = '0';
     setTimeout(() => DOM.loadingSpinner.remove(), 300);
+
+    // Set Count Repos for Pagination
+    RepoSystem.updateReposPerPage();
+    window.addEventListener('resize', _.debounce(() => RepoSystem.handleResize(), 250));
   } catch (error) {
-    ErrorHandler.handle(error, DOM.loadingSpinner);
+    ErrorHandler.handle(error);
   }
 });
 
+// =============================================================================
+// Navigation: Bar & Scroll Effects
+// =============================================================================
+document.querySelector('.nav-menu-toggle').addEventListener('click', function(e) {
+  e.stopPropagation();
+  this.classList.toggle('active');
+  document.querySelector('.nav-menu').classList.toggle('active');
+});
 
-// =============================================================================
-// Scroll Effects | Navigation
-// =============================================================================
+document.addEventListener('click', (e) => {
+  const menu = document.querySelector('.nav-menu');
+  const toggle = document.querySelector('.nav-menu-toggle');
+
+  if (!menu.contains(e.target) && !toggle.contains(e.target)) {
+    menu.classList.remove('active');
+    toggle.classList.remove('active');
+  }
+});
+
 window.addEventListener('scroll', () => {
-  const sectionTop = document.getElementById('repositories').offsetTop - 100;
+  const sectionTop = DOM.reposSection.offsetTop - 100;
   const isScrolled = window.scrollY > sectionTop;
 
   DOM.navContainer.classList.toggle('scrolled', isScrolled);

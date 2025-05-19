@@ -3,17 +3,17 @@ Base Styles & Variables
 ========================================================================== */
 :root {
   /* Color Palette */
-  --anx-c-bg: #0a0a0a;
-  --anx-c-bg-alt: #121212;
-  --anx-c-bg-elv: #1a1a1a;
-  --anx-c-bg-soft: #202020;
-  --anx-c-text-1: #f8fafc;
-  --anx-c-text-2: #94a3b8;
-  --anx-c-text-3: #64748b;
-  --anx-c-brand-1: #47aff9;
-  --anx-c-brand-2: #1c91e5; /* <- Main Accent Color? */
-  --anx-c-brand-3: #18fff7;
-  --anx-c-divider: #2d2d2d;
+  --anx-c-bg: #000000;
+  --anx-c-bg-alt: #0a0a0a;
+  --anx-c-bg-elv: #111111;
+  --anx-c-bg-soft: #1a1a1a;
+  --anx-c-text-1: #ffffff;
+  --anx-c-text-2: #b0b0b0;
+  --anx-c-text-3: #707070;
+  --anx-c-brand-1: #00b4d8;
+  --anx-c-brand-2: color-mix(in srgb, var(--anx-c-brand-1) 70%, black);
+  --anx-c-brand-3: color-mix(in srgb, var(--anx-c-brand-1) 40%, white);
+  --anx-c-divider: #252525;
   --anx-c-button: #424242;
 
   /* Typography */
@@ -22,15 +22,17 @@ Base Styles & Variables
   --anx-font-special: 'Comic Neue', cursive;
 
   /* Other */
-  --container-width: 1300px;
+  --container-width: 1800px;
   --anx-border-radius-sm: 8px;
   --anx-border-radius-xl: 16px;
   --anx-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   --anx-brand-shadow: 0 0 12px color-mix(in srgb, var(--anx-c-brand-2) 25%, transparent);
   --anx-nav-height: 3.5rem;
-  --anx-c-nav: rgba(10, 10, 10, 0.80);
+  --anx-c-nav: rgba(5, 5, 5, 0.60);
   --anx-repo-control-height: 3rem;
   --transition-speed: 0.3s;
+
+  color-scheme: dark;
 }
 
 
@@ -45,12 +47,12 @@ Base Reset & Global Styles
   padding: 0;
 }
 
-html, body {
+body {
+  position: relative;
+  min-height: 100vh;
   color: var(--anx-c-text-1);
-  font-family: var(--anx-font-family-base);
   background: var(--anx-c-bg);
-  line-height: 1.6;
-  scroll-behavior: smooth;
+  font-family: var(--anx-font-family-base);
   /* Mobile */
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
@@ -74,6 +76,34 @@ a {
   background: var(--anx-c-bg-soft);
   border-radius: 4px;
 }
+
+
+/* ==========================================================================
+Background
+========================================================================== */
+.grid-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    repeating-linear-gradient(0deg, 
+      rgba(30,30,30,0.25) 0px, 
+      rgba(30,30,30,0.25) 1px, 
+      transparent 1px, 
+      transparent 20px
+    ),
+    repeating-linear-gradient(90deg, 
+      rgba(30,30,30,0.25) 0px, 
+      rgba(30,30,30,0.25) 1px, 
+      transparent 1px, 
+      transparent 20px
+    );
+  z-index: -10;
+  pointer-events: none;
+}
+
 
 /* ==========================================================================
 Navigation
@@ -106,7 +136,7 @@ Navigation
   font-family: var(--anx-font-special);
   font-size: 1.3rem;
   font-weight: 700;
-  padding: 0.25rem 1rem;
+  padding: 0.5rem 1rem;
   color: var(--anx-c-brand-1);
   background: color-mix(in srgb, var(--anx-c-brand-1) 5%, transparent);
   border-radius: var(--anx-border-radius-xl);
@@ -125,10 +155,64 @@ Navigation
   }
 }
 
-.nav-links {
-  display: flex;
-  gap: 1.5rem;
+/* Navigation Menu Bar */
+.nav-menu-toggle {
+  position: relative;
+  cursor: pointer;
 }
+
+.menu-bars {
+  position: relative;
+  width: 30px;
+  height: 25px;
+  align-items: center;
+}
+
+.menu-bars .bar {
+  position: absolute;
+  width: 100%;
+  height: 3px;
+  background: var(--anx-c-text-3);
+  border-radius: 4px;
+  transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+}
+.menu-bars:hover .bar {
+  background: var(--anx-c-text-2);
+}
+
+.bar:nth-child(1) { top: 0; }
+.bar:nth-child(2) { top: 10px; }
+.bar:nth-child(3) { top: 20px; }
+
+.nav-menu-toggle.active .bar:nth-child(1) {
+  transform: translateY(10px) rotate(45deg);
+}
+.nav-menu-toggle.active .bar:nth-child(2) {
+  opacity: 0;
+  transform: translateX(-10px)
+}
+.nav-menu-toggle.active .bar:nth-child(3) {
+  transform: translateY(-10px) rotate(-45deg);
+}
+
+.nav-menu {
+  position: absolute;
+  display: flex;
+  top: 50%;
+  right: 60px;
+  gap: 1.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-50%);
+  transition: all 0.3s ease;
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+    right: 80px;
+  }
+}
+
 .nav-link {
   font-size: 1.5rem;
   color: var(--anx-c-text-2);
@@ -141,30 +225,26 @@ Navigation
 }
 
 
+
 /* ==========================================================================
 Main Content
 ========================================================================== */
 .main-container {
   max-width: var(--container-width);
-  margin: var(--anx-nav-height) auto 0;
-  padding: 2rem;
+  padding: 5rem;
 }
-
 
 /* === Profile Section === */
 .profile-section {
-  position: relative;
   display: grid;
-  /* align-items: start; */
   margin-bottom: 4.5rem;
-  padding: 2rem;
+  padding: 2.5rem 2rem;
   background: var(--anx-c-bg-soft);
   border: 2px solid var(--anx-c-divider);
   border-radius: calc(var(--anx-border-radius-xl) * 2);
   box-shadow: var(--anx-shadow);
   grid-template-columns: 1fr 2fr;
   gap: 2.5rem;
-  overflow: hidden;
 }
 
 .avatar-container {
@@ -174,9 +254,9 @@ Main Content
   max-width: 100%;
   width: min(250px, 30vw);
   margin: 0 auto;
-  border: 3px solid var(--anx-c-brand-1);
+  border: 4px solid var(--anx-c-brand-1);
   border-radius: 50%;
-  box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 25px color-mix(in srgb, var(--anx-c-brand-1) 40%, transparent);
   user-select: none;
   overflow: hidden;
   transition: transform var(--transition-speed) ease;
@@ -199,14 +279,14 @@ Main Content
 .profile-info {
   display: flex;
   flex-direction: column;
-  /* min-width: 0; */
   gap: 1rem;
+  justify-content: space-between;
 }
 
 .profile-name {
   font-family: var(--anx-font-heading);
   font-size: clamp(1.8rem, 4vw, 2.6rem);
-  font-weight: 600;
+  /* font-weight: 600; */
   color: var(--anx-c-brand-1);
   text-shadow: 2px 2px color-mix(in srgb, var(--anx-c-brand-2) 60%, var(--anx-c-bg));
   word-break: break-word;
@@ -215,10 +295,13 @@ Main Content
 .bio-container {
   position: relative;
   font-size: 1.1rem;
+  height: 100%;
   color: var(--anx-c-text-2);
   padding: 1rem;
   background: var(--anx-c-bg-alt);
+  border: 2px solid transparent;
   border-radius: var(--anx-border-radius-xl);
+  box-shadow: var(--anx-shadow);
 }
 .user-login {
   position: absolute;
@@ -244,16 +327,19 @@ Main Content
   align-items: center;
   padding: 1rem;
   background: var(--anx-c-bg-alt);
+  border: 2px solid transparent;
   border-radius: var(--anx-border-radius-xl);
   gap: 0.5rem;
   cursor: pointer;
   text-decoration: none;
-  transition: background var(--transition-speed) ease;
-  
+  transition: all var(--transition-speed) ease;
+
   &:hover {
     background: color-mix(in srgb, var(--anx-c-brand-1) 25%, var(--anx-c-bg-alt));
+    border: 2px solid color-mix(in srgb, var(--anx-c-brand-1), transparent);
   }
 }
+
 
 /* === Repositories Section === */
 .section-title {
@@ -270,7 +356,7 @@ Main Content
   &::after {
     content: '';
     flex: 1;
-    height: 4px;
+    height: 5px;
     background: linear-gradient(
       to var(--direction),
       var(--anx-c-divider) 0%,
@@ -294,7 +380,7 @@ Main Content
   box-shadow: var(--anx-shadow);
   align-items: center;
   justify-content: space-between;
-  /* gap: 1rem; */
+  gap: 1rem;
 }
 
 /* --Search-- */
@@ -306,12 +392,12 @@ Main Content
   #repoSearch {
     width: 100%;
     height: var(--anx-repo-control-height);
-    padding: 0.75rem 2rem 0.75rem 1rem;
+    padding: 0.75rem;
     color: var(--anx-c-text-1);
     background: var(--anx-c-bg-alt);
     border: 2px solid var(--anx-c-divider);
     border-radius: var(--anx-border-radius-xl);
-    transition: all var(--transition-speed) ease;
+    transition: border-color var(--transition-speed) ease;
     outline: none;
 
     &:focus {
@@ -333,11 +419,11 @@ Main Content
   position: relative;
   min-width: 200px;
   height: var(--anx-repo-control-height);
-  z-index: 101;
+  z-index: 200;
 
   .select-header {
     display: flex;
-    padding: 0 1rem;
+    padding: 1rem;
     height: 100%;
     color: var(--anx-c-text-2);
     background: var(--anx-c-bg-alt);
@@ -380,13 +466,13 @@ Main Content
   transform: translateY(10px);
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 100;
 }
 .custom-select.active .select-options {
   max-height: 300px;
   opacity: 1;
   transform: translateY(0);
 }
+
 /* Select Options */
 .select-options div {
   display: flex;
@@ -431,11 +517,11 @@ Main Content
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(5px);
   opacity: 0;
   visibility: hidden;
   transition: all var(--transition-speed) ease;
-  z-index: 90;
+  z-index: 100;
 
   &.active {
     opacity: 1;
@@ -469,7 +555,7 @@ Main Content
     background: color-mix(in srgb, var(--anx-c-brand-2) 25%, var(--anx-c-bg-alt));
     border-color: color-mix(in srgb, var(--anx-c-brand-2) 85%, var(--anx-c-divider));
   }
-  
+
   &:hover:not(.active) {
     background: var(--anx-c-bg-soft);
   }
@@ -500,7 +586,6 @@ Main Content
   opacity: 0;
   transition: transform 0.2s ease;
   animation: opacityCard var(--transition-speed) ease forwards;
-  animation-delay: calc(var(--index) * 0.1s);
 
   &:hover {
     transform: translateY(-2px);
@@ -526,8 +611,8 @@ Main Content
     pointer-events: none;
     user-select: none;
     opacity: 0;
-    transition: opacity var(--transition-speed) ease;
     z-index: 0;
+    transition: opacity var(--transition-speed) ease;
   }
 }
 
@@ -617,23 +702,21 @@ Main Content
   gap: 0.3rem;
 }
 
-
 /* Repo Button */
 .repo-button {
   display: inline-flex;
   width: fit-content;
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem;
   color: var(--anx-c-text-1);
   background: var(--anx-c-button);
   border-radius: var(--anx-border-radius-sm);
   text-decoration: none;
   align-items: center;
-  align-self: flex-start;
   gap: 0.5rem;
   transition: all 0.2s ease;
 
   &:hover {
-    background: color-mix(in srgb, var(--anx-c-brand-2) 30%, var(--anx-c-button));
+    background: color-mix(in srgb, var(--anx-c-brand-2) 40%, var(--anx-c-button));
     box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.35);
     transform: translateY(-2px);
   }
@@ -661,6 +744,9 @@ Main Content
   gap: 1rem;
   margin: 2rem 0;
   padding: 1rem;
+}
+.pagination-container:empty {
+  display: none;
 }
 
 .pagination-button {
@@ -702,6 +788,7 @@ Main Content
   font-size: 1.2rem;
   padding: 4rem 2rem;
   color: var(--anx-c-text-2);
+  background: var(--anx-c-bg);
   border: 2px dashed var(--anx-c-divider);
   border-radius: var(--anx-border-radius-xl);
 
@@ -709,7 +796,7 @@ Main Content
     font-size: 3rem;
     margin-bottom: 1rem;
     color: var(--anx-c-brand-2);
-    opacity: 0.8;
+    /* opacity: 0.8; */
   }
 
   p {
@@ -722,6 +809,35 @@ Main Content
 /* Repos Icon Glow */
 .no-repos-message i {
   filter: drop-shadow(var(--anx-brand-shadow));
+}
+
+
+/* ==========================================================================
+Users-PopUp-DATA
+========================================================================== */
+.user-popup {
+  position: fixed;
+  bottom: 20px;
+  right: -300px;
+  padding: 1rem 2rem;
+  color: var(--anx-c-text-1);
+  background: var(--anx-c-bg-soft);
+  border: 2px solid var(--anx-c-divider);
+  border-radius: var(--anx-border-radius-sm);
+  box-shadow: var(--anx-shadow);
+  opacity: 0;
+  z-index: 1000;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.show {
+    right: 20px;
+    opacity: 1;
+  }
+}
+
+.popup-username {
+  color: var(--anx-c-brand-1);
+  font-weight: 700;
 }
 
 
@@ -776,35 +892,6 @@ Loading Spinner
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-
-/* ==========================================================================
-Users-PopUp-DATA
-========================================================================== */
-.user-popup {
-  position: fixed;
-  bottom: 20px;
-  right: -300px;
-  padding: 1rem 2rem;
-  color: var(--anx-c-text-1);
-  background: var(--anx-c-bg-soft);
-  border: 2px solid var(--anx-c-divider);
-  border-radius: var(--anx-border-radius-sm);
-  box-shadow: var(--anx-shadow);
-  opacity: 0;
-  z-index: 1000;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &.show {
-    right: 20px;
-    opacity: 1;
-  }
-}
-
-.popup-username {
-  color: var(--anx-c-brand-1);
-  font-weight: 700;
 }
 
 
@@ -895,6 +982,12 @@ Devices Adaptation
   .nav-container {
     padding: 0 1rem;
   }
+  .nav-menu {
+    right: 30px;
+  
+    &.active { right: 60px; }
+  }
+
   .nav-brand {
     font-size: 1.2rem;
   }
@@ -908,7 +1001,7 @@ Devices Adaptation
     background: linear-gradient(transparent 5%, var(--anx-c-bg-soft) 85%);
     border: none;
   }
-  
+
   .stat-item {
     flex: 1 1 45%;
     min-width: 160px;
