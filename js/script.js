@@ -285,7 +285,7 @@ class RepoSystem {
       return;
     }
     
-    this.updateReposPerPage();
+    this.reposPerPage = this.calculateInitialReposPerPage();
     this.allRepos = [...repos].sort(Utils.sorting.stars);
     this.currentFilteredRepos = this.allRepos;
     this.setupSearch();
@@ -293,15 +293,9 @@ class RepoSystem {
     this.render();
   }
 
-  // Repos on Mobile - 8
-  static updateReposPerPage() {
-    this.reposPerPage = window.matchMedia('(max-width: 768px)').matches ? 8 : 24;
-  }
-
-  static handleResize() {
-    this.updateReposPerPage();
-    this.currentPage = 1;
-    this.render();
+  static calculateInitialReposPerPage() {
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    return isMobile ? 12 : 24;
   }
 
   static render() {
@@ -621,10 +615,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Remove LoadingSpinner
     DOM.loadingSpinner.style.opacity = '0';
     setTimeout(() => DOM.loadingSpinner.remove(), 300);
-
-    // Set Count Repos for Pagination
-    RepoSystem.updateReposPerPage();
-    window.addEventListener('resize', _.debounce(() => RepoSystem.handleResize(), 250));
   } catch (error) {
     ErrorHandler.handle(error);
   }

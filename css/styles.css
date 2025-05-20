@@ -26,7 +26,7 @@ Base Styles & Variables
   --anx-border-radius-sm: 8px;
   --anx-border-radius-xl: 16px;
   --anx-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  --anx-brand-shadow: 0 0 12px color-mix(in srgb, var(--anx-c-brand-2) 25%, transparent);
+  --anx-brand-shadow: 0 0 12px color-mix(in srgb, var(--anx-c-brand-2) 60%, transparent);
   --anx-nav-height: 3.5rem;
   --anx-c-nav: rgba(5, 5, 5, 0.60);
   --anx-repo-control-height: 3rem;
@@ -736,7 +736,6 @@ Main Content
   gap: 0.5rem;
 }
 
-
 /* Pagination */
 .pagination-container {
   display: flex;
@@ -1060,6 +1059,15 @@ Devices Adaptation
   .repo-description {
     font-size: 0.9rem;
     padding: 0.8rem;
+  }
+  
+  /* Pagination */
+  .pagination-container {
+    padding: 1rem 0;
+    gap: 2.5rem;
+  }
+  .pagination-button {
+    flex: 1;
   }
 }
 
