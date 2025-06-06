@@ -34,22 +34,22 @@ const DOM = {
   navContainer: document.querySelector('.nav-container'),
   navBrand: document.querySelector('.nav-brand'),
   githubProfileLink: document.getElementById('githubProfileLink'),
-  
+
   mainContainer: document.querySelector('.main-container'),
-  
+
   // Profile Section
   userAvatar: document.getElementById('userAvatar'),
   userLogin: document.getElementById('user-login'),
   userName: document.getElementById('userName'),
   userBio: document.getElementById('userBio'),
   userStats: document.getElementById('userStats'),
-  
+
   // Repositories Section
   reposSection: document.getElementById('repositories'),
   reposContainer: document.getElementById('reposContainer'),
   repoSearch: document.getElementById('repoSearch'),
   customSelect: document.querySelector('.custom-select'),
-  
+
   // Other
   loadingSpinner: document.querySelector('.loading-spinner')
 };
@@ -173,12 +173,12 @@ class ProfileSystem {
       const vibrant = new Vibrant(img);
       const palette = await vibrant.getPalette();
       const colors = [palette.Vibrant, palette.Muted, palette.DarkVibrant];
-      const validColor = colors.find(c => c && 
+      const validColor = colors.find(c => c &&
                                      !/^(#fff|#000|ffffff|000000)/i.test(c.hex));
 
       if (validColor) {
         document.documentElement.style.setProperty(
-          '--anx-c-brand-1', 
+          '--anx-c-brand-1',
           validColor.hex
         );
       }
@@ -284,7 +284,7 @@ class RepoSystem {
       DOM.reposSection.innerHTML = this.displayMessage('fa-folder-open', 'No public repositories found.');
       return;
     }
-    
+
     this.reposPerPage = this.calculateInitialReposPerPage();
     this.allRepos = [...repos].sort(Utils.sorting.stars);
     this.currentFilteredRepos = this.allRepos;
@@ -303,7 +303,7 @@ class RepoSystem {
     const endIdx = startIdx + this.reposPerPage;
     const reposToShow = this.currentFilteredRepos.slice(startIdx, endIdx);
 
-    DOM.reposContainer.innerHTML = reposToShow.length 
+    DOM.reposContainer.innerHTML = reposToShow.length
       ? reposToShow.map(repo => this.createRepoCard(repo)).join('')
     : this.displayMessage('fa-search-minus', 'No repositories found matching your search.');
 
@@ -357,7 +357,7 @@ class RepoSystem {
     return `
       <div class="repo-meta">
         <span class="meta-item">
-          <span class="language-dot" 
+          <span class="language-dot"
                 style="background: ${CONFIG.languageColors[language] || '#3a5ccc'}">
           </span>
           ${language}
@@ -377,9 +377,9 @@ class RepoSystem {
   static setupSearch() {
     DOM.repoSearch.addEventListener('input', _.debounce(() => {
       const term = DOM.repoSearch.value.toLowerCase();
-      this.currentFilteredRepos = this.allRepos.filter(repo => 
-                                                       repo.name.toLowerCase().includes(term) || 
-                                                       (repo.description?.toLowerCase().includes(term)) || 
+      this.currentFilteredRepos = this.allRepos.filter(repo =>
+                                                       repo.name.toLowerCase().includes(term) ||
+                                                       (repo.description?.toLowerCase().includes(term)) ||
                                                        (repo.topics?.some(topic => topic.toLowerCase().includes(term)))
                                                       );
       this.currentPage = 1;
@@ -415,7 +415,7 @@ class RepoSystem {
     const tag = document.createElement('div');
     tag.className = `filter-tag ${isAll ? 'active' : ''}`;
     tag.innerHTML = `
-      ${!isAll ? `<span class="language-dot" 
+      ${!isAll ? `<span class="language-dot"
        style="background: ${CONFIG.languageColors[language] || '#3a5ccc'}"></span>` : ''}
       ${language}
     `;
@@ -427,7 +427,7 @@ class RepoSystem {
         tag.classList.add('active');
       } else {
         tag.classList.toggle('active');
-        tag.classList.contains('active') 
+        tag.classList.contains('active')
           ? this.activeLanguages.add(language)
         : this.activeLanguages.delete(language);
 
@@ -513,7 +513,7 @@ class CustomSelect {
 
   init() {
     this.header.addEventListener('click', (e) => this.toggle(e));
-    this.options.forEach(opt => 
+    this.options.forEach(opt =>
                          opt.addEventListener('click', () => this.handleOptionClick(opt))
                         );
     document.addEventListener('click', (e) => {
