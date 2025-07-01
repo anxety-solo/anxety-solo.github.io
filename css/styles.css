@@ -26,7 +26,7 @@ Base Styles & Variables
   --anx-border-radius-sm: 8px;
   --anx-border-radius-xl: 16px;
   --anx-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  --anx-brand-shadow: 0 0 12px color-mix(in srgb, var(--anx-c-brand-2) 25%, transparent);
+  --anx-brand-shadow: 0 0 12px color-mix(in srgb, var(--anx-c-brand-2) 60%, transparent);
   --anx-nav-height: 3.5rem;
   --anx-c-nav: rgba(5, 5, 5, 0.60);
   --anx-repo-control-height: 3rem;
@@ -82,22 +82,22 @@ a {
 Background
 ========================================================================== */
 .grid-background {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
-    repeating-linear-gradient(0deg, 
-      rgba(30,30,30,0.25) 0px, 
-      rgba(30,30,30,0.25) 1px, 
-      transparent 1px, 
+  background:
+    repeating-linear-gradient(0deg,
+      rgba(30,30,30,0.25) 0px,
+      rgba(30,30,30,0.25) 1px,
+      transparent 1px,
       transparent 20px
     ),
-    repeating-linear-gradient(90deg, 
-      rgba(30,30,30,0.25) 0px, 
-      rgba(30,30,30,0.25) 1px, 
-      transparent 1px, 
+    repeating-linear-gradient(90deg,
+      rgba(30,30,30,0.25) 0px,
+      rgba(30,30,30,0.25) 1px,
+      transparent 1px,
       transparent 20px
     );
   z-index: -10;
@@ -230,8 +230,9 @@ Navigation
 Main Content
 ========================================================================== */
 .main-container {
-  max-width: var(--container-width);
+  margin: 0 auto;
   padding: 5rem;
+  max-width: var(--container-width);
 }
 
 /* === Profile Section === */
@@ -736,7 +737,6 @@ Main Content
   gap: 0.5rem;
 }
 
-
 /* Pagination */
 .pagination-container {
   display: flex;
@@ -957,9 +957,9 @@ Error Message Loading Screen
 }
 
 @keyframes fadeInUp {
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -984,7 +984,7 @@ Devices Adaptation
   }
   .nav-menu {
     right: 30px;
-  
+
     &.active { right: 60px; }
   }
 
@@ -1060,6 +1060,15 @@ Devices Adaptation
   .repo-description {
     font-size: 0.9rem;
     padding: 0.8rem;
+  }
+
+  /* Pagination */
+  .pagination-container {
+    padding: 1rem 0;
+    gap: 2.5rem;
+  }
+  .pagination-button {
+    flex: 1;
   }
 }
 
